@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { UserPlus, X } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,24 +18,40 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-interface AddMemberDialogProps {
-  onAddMember: (name: string, phone: string, type: 'regular' | 'visitor') => void;
+interface Neighborhood {
+  id: string;
+  name: string;
 }
 
-export function AddMemberDialog({ onAddMember }: AddMemberDialogProps) {
+interface AddMemberDialogProps {
+  onAddMember: (name: string, phone: string, type: 'regular' | 'visitor', neighborhoodId: string | null) => Promise<unknown>;
+  neighborhoods: Neighborhood[];
+}
+
+export function AddMemberDialog({ onAddMember, neighborhoods }: AddMemberDialogProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [type, setType] = useState<'regular' | 'visitor'>('visitor');
+  const [neighborhoodId, setNeighborhoodId] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (name.trim()) {
-      onAddMember(name.trim(), phone.trim(), type);
+      setIsSubmitting(true);
+      await onAddMember(
+        name.trim(),
+        phone.trim(),
+        type,
+        neighborhoodId || null
+      );
       setName('');
       setPhone('');
       setType('visitor');
+      setNeighborhoodId('');
       setOpen(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -74,6 +90,22 @@ export function AddMemberDialog({ onAddMember }: AddMemberDialogProps) {
             />
           </div>
           <div className="space-y-2">
+            <Label>Neighborhood</Label>
+            <Select value={neighborhoodId} onValueChange={setNeighborhoodId}>
+              <SelectTrigger className="h-11">
+                <SelectValue placeholder="Select neighborhood" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Unknown</SelectItem>
+                {neighborhoods.map((n) => (
+                  <SelectItem key={n.id} value={n.id}>
+                    {n.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
             <Label>Member Type</Label>
             <Select value={type} onValueChange={(v) => setType(v as 'regular' | 'visitor')}>
               <SelectTrigger className="h-11">
@@ -96,10 +128,10 @@ export function AddMemberDialog({ onAddMember }: AddMemberDialogProps) {
             </Button>
             <Button
               type="submit"
-              disabled={!name.trim()}
+              disabled={!name.trim() || isSubmitting}
               className="flex-1 gradient-warm text-primary-foreground"
             >
-              Add Person
+              {isSubmitting ? 'Adding...' : 'Add Person'}
             </Button>
           </div>
         </form>

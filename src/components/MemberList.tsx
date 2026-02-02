@@ -1,14 +1,21 @@
-import { Member } from '@/types';
+import { Member } from '@/hooks/useMembers';
 import { MemberCard } from './MemberCard';
 
 interface MemberListProps {
   members: Member[];
   todayAttendees: Set<string>;
   onToggleCheckIn: (memberId: string) => void;
+  onDeleteMember?: (memberId: string) => void;
   filter: 'all' | 'regular' | 'visitor';
 }
 
-export function MemberList({ members, todayAttendees, onToggleCheckIn, filter }: MemberListProps) {
+export function MemberList({
+  members,
+  todayAttendees,
+  onToggleCheckIn,
+  onDeleteMember,
+  filter,
+}: MemberListProps) {
   const filteredMembers = members.filter((member) => {
     if (filter === 'all') return true;
     return member.type === filter;
@@ -26,7 +33,9 @@ export function MemberList({ members, todayAttendees, onToggleCheckIn, filter }:
   if (sortedMembers.length === 0) {
     return (
       <div className="text-center py-12 text-muted-foreground">
-        <p>No {filter === 'all' ? 'members' : filter === 'regular' ? 'regulars' : 'visitors'} yet.</p>
+        <p>
+          No {filter === 'all' ? 'members' : filter === 'regular' ? 'regulars' : 'visitors'} yet.
+        </p>
       </div>
     );
   }
@@ -39,6 +48,7 @@ export function MemberList({ members, todayAttendees, onToggleCheckIn, filter }:
           member={member}
           isCheckedIn={todayAttendees.has(member.id)}
           onToggle={() => onToggleCheckIn(member.id)}
+          onDelete={onDeleteMember ? () => onDeleteMember(member.id) : undefined}
         />
       ))}
     </div>
