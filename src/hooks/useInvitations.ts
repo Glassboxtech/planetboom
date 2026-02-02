@@ -53,7 +53,8 @@ export function useInvitations() {
 
     setInvitations((prev) => [data as Invitation, ...prev]);
     
-    // Generate invite URL
+    // Generate invite URL - token is securely delivered to the user via clipboard
+    // The invited user will only be able to use it if their email matches
     const inviteUrl = `${window.location.origin}/signup?invite=${data.token}`;
     
     // Copy to clipboard

@@ -8,14 +8,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { Loader2, Info } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 
 export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [invitationInfo, setInvitationInfo] = useState<{ email: string; role: string } | null>(null);
   const { signUp, user, isLoading } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -23,28 +21,49 @@ export default function Signup() {
 
   useEffect(() => {
     if (!isLoading && user) {
-      navigate('/');
+      // If user just signed in and has an invite token, process it
+      if (inviteToken) {
+        acceptInvitation(inviteToken);
+      } else {
+        navigate('/');
+      }
     }
-  }, [user, isLoading, navigate]);
+  }, [user, isLoading, navigate, inviteToken]);
 
-  useEffect(() => {
-    // Fetch invitation details if token exists
-    if (inviteToken) {
-      supabase
-        .from('invitations')
-        .select('email, role')
-        .eq('token', inviteToken)
-        .is('accepted_at', null)
-        .gt('expires_at', new Date().toISOString())
-        .maybeSingle()
-        .then(({ data }) => {
-          if (data) {
-            setInvitationInfo({ email: data.email, role: data.role });
-            setEmail(data.email);
-          }
-        });
+  const acceptInvitation = async (token: string) => {
+    try {
+      const { data: { session } } = await import('@/integrations/supabase/client').then(m => m.supabase.auth.getSession());
+      
+      if (!session?.access_token) {
+        navigate('/');
+        return;
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/accept-invitation`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ inviteToken: token }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (response.ok) {
+        toast.success(`Invitation accepted! You've been assigned the ${result.role?.replace('_', ' ')} role.`);
+      } else {
+        toast.error(result.error || 'Failed to accept invitation');
+      }
+    } catch (error) {
+      console.error('Error accepting invitation:', error);
+      toast.error('Failed to process invitation');
     }
-  }, [inviteToken]);
+    navigate('/');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,18 +94,17 @@ export default function Signup() {
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
           <CardDescription>
-            {invitationInfo
-              ? `You've been invited to join as ${invitationInfo.role.replace('_', ' ')}`
+            {inviteToken
+              ? 'Complete your signup to accept the invitation'
               : 'Sign up to start managing attendance'}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {invitationInfo && (
+          {inviteToken && (
             <Alert className="mb-4">
               <Info className="w-4 h-4" />
               <AlertDescription>
-                You're signing up with an invitation. You'll be assigned the{' '}
-                <strong>{invitationInfo.role.replace('_', ' ')}</strong> role.
+                You're signing up with an invitation. Your role will be assigned after email verification.
               </AlertDescription>
             </Alert>
           )}
@@ -111,7 +129,6 @@ export default function Signup() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                disabled={!!invitationInfo}
               />
             </div>
             <div className="space-y-2">
