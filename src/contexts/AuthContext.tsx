@@ -82,8 +82,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error as Error | null };
   };
 
-  const signUp = async (email: string, password: string, fullName: string, inviteToken?: string) => {
-    const { data, error } = await supabase.auth.signUp({
+  const signUp = async (email: string, password: string, fullName: string, _inviteToken?: string) => {
+    // Note: inviteToken is now handled separately via edge function after email verification
+    const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -94,31 +95,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (error) return { error: error as Error };
 
-    // If there's an invite token, accept it
-    if (inviteToken && data.user) {
-      const { data: invitation } = await supabase
-        .from('invitations')
-        .select('*')
-        .eq('token', inviteToken)
-        .is('accepted_at', null)
-        .gt('expires_at', new Date().toISOString())
-        .maybeSingle();
-
-      if (invitation) {
-        // Assign the role from the invitation
-        await supabase.from('user_roles').insert({
-          user_id: data.user.id,
-          role: invitation.role,
-        });
-
-        // Mark invitation as accepted
-        await supabase
-          .from('invitations')
-          .update({ accepted_at: new Date().toISOString() })
-          .eq('id', invitation.id);
-      }
-    }
-
+    // Role assignment is now handled server-side via accept-invitation edge function
+    // This happens after the user verifies their email and logs in
     return { error: null };
   };
 
