@@ -44,7 +44,7 @@ export function AddMemberDialog({ onAddMember, neighborhoods }: AddMemberDialogP
         name.trim(),
         phone.trim(),
         type,
-        neighborhoodId || null
+        neighborhoodId === 'unknown' ? null : (neighborhoodId || null)
       );
       setName('');
       setPhone('');
@@ -96,7 +96,7 @@ export function AddMemberDialog({ onAddMember, neighborhoods }: AddMemberDialogP
                 <SelectValue placeholder="Select neighborhood" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Unknown</SelectItem>
+                <SelectItem value="unknown">Unknown</SelectItem>
                 {neighborhoods.map((n) => (
                   <SelectItem key={n.id} value={n.id}>
                     {n.name}
