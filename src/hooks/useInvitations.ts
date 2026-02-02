@@ -53,33 +53,13 @@ export function useInvitations() {
 
     setInvitations((prev) => [data as Invitation, ...prev]);
     
-    // Generate invite URL
+    // Generate invite URL - token is securely delivered to the user via clipboard
+    // The invited user will only be able to use it if their email matches
     const inviteUrl = `${window.location.origin}/signup?invite=${data.token}`;
     
-    // Send email via edge function
-    try {
-      const response = await supabase.functions.invoke('send-invite-email', {
-        body: {
-          email,
-          role,
-          inviteUrl,
-        },
-      });
-      
-      if (response.error) {
-        console.error('Email send error:', response.error);
-        // Still copy to clipboard as fallback
-        await navigator.clipboard.writeText(inviteUrl);
-        toast.warning('Email failed to send. Invitation link copied to clipboard instead.');
-      } else {
-        toast.success('Invitation email sent successfully!');
-      }
-    } catch (err) {
-      console.error('Error calling send-invite-email:', err);
-      // Fallback to clipboard
-      await navigator.clipboard.writeText(inviteUrl);
-      toast.warning('Email failed. Link copied to clipboard.');
-    }
+    // Copy to clipboard
+    await navigator.clipboard.writeText(inviteUrl);
+    toast.success('Invitation link copied to clipboard!');
     
     return data as Invitation;
   }, []);
