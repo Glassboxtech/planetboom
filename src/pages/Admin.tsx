@@ -23,8 +23,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { ArrowLeft, Copy, Trash2, Plus, MapPin, Users, Loader2 } from 'lucide-react';
+import { ArrowLeft, Copy, Trash2, Plus, MapPin, Users, Loader2, Map } from 'lucide-react';
 import { toast } from 'sonner';
+import { NeighborhoodMap } from '@/components/NeighborhoodMap';
 
 export default function Admin() {
   const { user, isSuperAdmin, isLoading: authLoading } = useAuth();
@@ -113,11 +114,78 @@ export default function Admin() {
       </header>
 
       <main className="container py-6">
-        <Tabs defaultValue="invitations" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 max-w-md">
+        <Tabs defaultValue="map" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3 max-w-lg">
+            <TabsTrigger value="map" className="flex items-center gap-2">
+              <Map className="w-4 h-4" />
+              Map
+            </TabsTrigger>
             <TabsTrigger value="invitations">Invitations</TabsTrigger>
             <TabsTrigger value="neighborhoods">Neighborhoods</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="map" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Map className="w-5 h-5" />
+                  Member Density Map
+                </CardTitle>
+                <CardDescription>
+                  Geographic distribution of youth members across neighborhoods
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <NeighborhoodMap neighborhoods={neighborhoodStats} />
+                <div className="mt-4 flex flex-wrap gap-4">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="w-4 h-4 rounded-full bg-blue-500/50 border border-blue-500" />
+                    <span>Low density</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="w-4 h-4 rounded-full bg-orange-500/50 border border-orange-500" />
+                    <span>Medium density</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="w-4 h-4 rounded-full bg-red-500/50 border border-red-500" />
+                    <span>High density</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Quick Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">{members.length}</div>
+                  <p className="text-sm text-muted-foreground">Total Members</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">{neighborhoods.length}</div>
+                  <p className="text-sm text-muted-foreground">Neighborhoods</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">
+                    {neighborhoodStats.filter(n => n.latitude && n.longitude).length}
+                  </div>
+                  <p className="text-sm text-muted-foreground">Mapped Areas</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">
+                    {members.filter(m => m.type === 'regular').length}
+                  </div>
+                  <p className="text-sm text-muted-foreground">Regular Members</p>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
 
           <TabsContent value="invitations" className="space-y-6">
             {/* Send Invitation */}
