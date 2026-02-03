@@ -84,6 +84,7 @@ export type Database = {
           attendance_count: number
           created_at: string
           first_visit: string
+          flag_count: number
           id: string
           name: string
           neighborhood_id: string | null
@@ -95,6 +96,7 @@ export type Database = {
           attendance_count?: number
           created_at?: string
           first_visit?: string
+          flag_count?: number
           id?: string
           name: string
           neighborhood_id?: string | null
@@ -106,6 +108,7 @@ export type Database = {
           attendance_count?: number
           created_at?: string
           first_visit?: string
+          flag_count?: number
           id?: string
           name?: string
           neighborhood_id?: string | null

@@ -11,6 +11,7 @@ export interface Member {
   neighborhood_id: string | null;
   first_visit: string;
   attendance_count: number;
+  flag_count: number;
   neighborhood?: { id: string; name: string } | null;
 }
 
@@ -25,6 +26,7 @@ export function useMembers() {
   const [members, setMembers] = useState<Member[]>([]);
   const [neighborhoods, setNeighborhoods] = useState<Neighborhood[]>([]);
   const [todayAttendees, setTodayAttendees] = useState<Set<string>>(new Set());
+  const [optimisticIds, setOptimisticIds] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
   const { isAdmin } = useAuth();
 
@@ -94,59 +96,80 @@ export function useMembers() {
 
   const toggleCheckIn = useCallback(async (memberId: string) => {
     const isCheckedIn = todayAttendees.has(memberId);
-
+    
+    // Optimistic update - immediately update UI
+    setOptimisticIds(prev => new Set([...prev, memberId]));
+    
     if (isCheckedIn) {
-      // Undo check-in
-      const { error } = await supabase
-        .from('attendance_records')
-        .delete()
-        .eq('member_id', memberId)
-        .eq('event_date', today);
-
-      if (error) {
-        toast.error('Failed to undo check-in');
-        return;
-      }
-
-      // Decrement attendance count
-      const member = members.find((m) => m.id === memberId);
-      if (member) {
-        await supabase
-          .from('members')
-          .update({ attendance_count: Math.max(0, member.attendance_count - 1) })
-          .eq('id', memberId);
-      }
-
+      // Optimistic: remove from checked in
       setTodayAttendees((prev) => {
         const next = new Set(prev);
         next.delete(memberId);
         return next;
       });
     } else {
-      // Check in
-      const { error } = await supabase
-        .from('attendance_records')
-        .insert({ member_id: memberId, event_date: today });
-
-      if (error) {
-        toast.error('Failed to check in');
-        return;
-      }
-
-      // Increment attendance count
-      const member = members.find((m) => m.id === memberId);
-      if (member) {
-        await supabase
-          .from('members')
-          .update({ attendance_count: member.attendance_count + 1 })
-          .eq('id', memberId);
-      }
-
+      // Optimistic: add to checked in
       setTodayAttendees((prev) => new Set([...prev, memberId]));
     }
 
-    // Refresh members to get updated type (auto-promotion)
-    await fetchMembers();
+    try {
+      if (isCheckedIn) {
+        // Undo check-in
+        const { error } = await supabase
+          .from('attendance_records')
+          .delete()
+          .eq('member_id', memberId)
+          .eq('event_date', today);
+
+        if (error) throw error;
+
+        // Decrement attendance count
+        const member = members.find((m) => m.id === memberId);
+        if (member) {
+          await supabase
+            .from('members')
+            .update({ attendance_count: Math.max(0, member.attendance_count - 1) })
+            .eq('id', memberId);
+        }
+      } else {
+        // Check in
+        const { error } = await supabase
+          .from('attendance_records')
+          .insert({ member_id: memberId, event_date: today });
+
+        if (error) throw error;
+
+        // Increment attendance count
+        const member = members.find((m) => m.id === memberId);
+        if (member) {
+          await supabase
+            .from('members')
+            .update({ attendance_count: member.attendance_count + 1 })
+            .eq('id', memberId);
+        }
+      }
+
+      // Refresh members to get updated type (auto-promotion)
+      await fetchMembers();
+    } catch (error) {
+      // Revert optimistic update on error
+      toast.error(isCheckedIn ? 'Failed to undo check-in' : 'Failed to check in');
+      if (isCheckedIn) {
+        setTodayAttendees((prev) => new Set([...prev, memberId]));
+      } else {
+        setTodayAttendees((prev) => {
+          const next = new Set(prev);
+          next.delete(memberId);
+          return next;
+        });
+      }
+    } finally {
+      setOptimisticIds(prev => {
+        const next = new Set(prev);
+        next.delete(memberId);
+        return next;
+      });
+    }
   }, [todayAttendees, members, today, fetchMembers]);
 
   const addMember = useCallback(async (
@@ -217,6 +240,57 @@ export function useMembers() {
     return data;
   }, []);
 
+  const flagMember = useCallback(async (memberId: string) => {
+    const member = members.find((m) => m.id === memberId);
+    if (!member) return false;
+
+    const newFlagCount = (member.flag_count || 0) + 1;
+    
+    const { error } = await supabase
+      .from('members')
+      .update({ flag_count: newFlagCount })
+      .eq('id', memberId);
+
+    if (error) {
+      toast.error('Failed to flag member');
+      return false;
+    }
+
+    setMembers((prev) => 
+      prev.map((m) => m.id === memberId ? { ...m, flag_count: newFlagCount } : m)
+    );
+    
+    if (newFlagCount >= 3) {
+      toast.warning(`${member.name} has been banned (3+ flags)`);
+    } else {
+      toast.success(`Flag added to ${member.name} (${newFlagCount}/3)`);
+    }
+    return true;
+  }, [members]);
+
+  const unflagMember = useCallback(async (memberId: string) => {
+    const member = members.find((m) => m.id === memberId);
+    if (!member || (member.flag_count || 0) === 0) return false;
+
+    const newFlagCount = Math.max(0, (member.flag_count || 0) - 1);
+    
+    const { error } = await supabase
+      .from('members')
+      .update({ flag_count: newFlagCount })
+      .eq('id', memberId);
+
+    if (error) {
+      toast.error('Failed to remove flag');
+      return false;
+    }
+
+    setMembers((prev) => 
+      prev.map((m) => m.id === memberId ? { ...m, flag_count: newFlagCount } : m)
+    );
+    toast.success(`Flag removed from ${member.name} (${newFlagCount}/3)`);
+    return true;
+  }, [members]);
+
   const stats = {
     totalMembers: members.length,
     regulars: members.filter((m) => m.type === 'regular').length,
@@ -228,11 +302,14 @@ export function useMembers() {
     members,
     neighborhoods,
     todayAttendees,
+    optimisticIds,
     stats,
     isLoading,
     toggleCheckIn,
     addMember,
     deleteMember,
+    flagMember,
+    unflagMember,
     addNeighborhood,
     refetch: fetchMembers,
   };

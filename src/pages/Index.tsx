@@ -5,6 +5,7 @@ import { StatsCards } from '@/components/StatsCards';
 import { MemberList } from '@/components/MemberList';
 import { AddMemberDialog } from '@/components/AddMemberDialog';
 import { FilterTabs } from '@/components/FilterTabs';
+import { NeighborhoodFilter } from '@/components/NeighborhoodFilter';
 import { EventHeader } from '@/components/EventHeader';
 import { Search, LogOut, Settings, Shield } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -18,14 +19,17 @@ const Index = () => {
     members,
     neighborhoods,
     todayAttendees,
+    optimisticIds,
     stats,
     isLoading,
     toggleCheckIn,
     addMember,
     deleteMember,
+    flagMember,
   } = useMembers();
 
   const [filter, setFilter] = useState<'all' | 'regular' | 'visitor'>('all');
+  const [neighborhoodFilter, setNeighborhoodFilter] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Get current Friday for event header
@@ -112,13 +116,20 @@ const Index = () => {
 
         {/* Search and Filter */}
         <div className="space-y-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by name..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-11 bg-card border-border"
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by name..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 h-11 bg-card border-border"
+              />
+            </div>
+            <NeighborhoodFilter
+              neighborhoods={neighborhoods}
+              selectedNeighborhood={neighborhoodFilter}
+              onNeighborhoodChange={setNeighborhoodFilter}
             />
           </div>
 
@@ -143,9 +154,12 @@ const Index = () => {
             <MemberList
               members={filteredMembers}
               todayAttendees={todayAttendees}
+              optimisticIds={optimisticIds}
               onToggleCheckIn={toggleCheckIn}
               onDeleteMember={deleteMember}
+              onFlagMember={flagMember}
               filter={filter}
+              neighborhoodFilter={neighborhoodFilter}
             />
           )}
         </div>
