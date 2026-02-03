@@ -7,7 +7,7 @@ import { AddMemberDialog } from '@/components/AddMemberDialog';
 import { FilterTabs } from '@/components/FilterTabs';
 import { NeighborhoodFilter } from '@/components/NeighborhoodFilter';
 import { EventHeader } from '@/components/EventHeader';
-import { Search, LogOut, Settings, Shield } from 'lucide-react';
+import { Search, LogOut, Settings, Shield, BarChart3 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Navigate, Link } from 'react-router-dom';
@@ -90,6 +90,11 @@ const Index = () => {
               </p>
             </div>
             <div className="flex items-center gap-2">
+              <Link to="/history">
+                <Button variant="outline" size="icon" title="Attendance History">
+                  <BarChart3 className="w-4 h-4" />
+                </Button>
+              </Link>
               {isSuperAdmin && (
                 <Link to="/admin">
                   <Button variant="outline" size="icon">
