@@ -1,3 +1,6 @@
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+
 -- Create app_role enum for user roles
 CREATE TYPE public.app_role AS ENUM ('super_admin', 'admin');
 
@@ -58,7 +61,7 @@ CREATE TABLE public.invitations (
   email TEXT NOT NULL,
   role app_role NOT NULL,
   invited_by UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
-  token TEXT NOT NULL UNIQUE DEFAULT encode(gen_random_bytes(32), 'hex'),
+  token TEXT NOT NULL UNIQUE DEFAULT encode(extensions.gen_random_bytes(32), 'hex'),
   expires_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT (now() + interval '7 days'),
   accepted_at TIMESTAMP WITH TIME ZONE,
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
