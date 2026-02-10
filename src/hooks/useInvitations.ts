@@ -11,6 +11,7 @@ interface Invitation {
   expires_at: string;
   accepted_at: string | null;
   created_at: string;
+  neighborhood_id: string | null;
 }
 
 export function useInvitations() {
@@ -39,10 +40,20 @@ export function useInvitations() {
     fetchInvitations();
   }, [fetchInvitations]);
 
-  const sendInvitation = useCallback(async (email: string, role: 'super_admin' | 'admin', invitedBy: string) => {
+  const sendInvitation = useCallback(async (
+    email: string,
+    role: 'super_admin' | 'admin',
+    invitedBy: string,
+    neighborhoodId: string | null = null,
+  ) => {
     const { data, error } = await supabase
       .from('invitations')
-      .insert({ email, role, invited_by: invitedBy })
+      .insert({
+        email,
+        role,
+        invited_by: invitedBy,
+        neighborhood_id: neighborhoodId,
+      })
       .select()
       .single();
 

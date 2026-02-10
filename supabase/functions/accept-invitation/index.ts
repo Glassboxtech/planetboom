@@ -20,7 +20,6 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Create client with user's auth token for validation
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -29,7 +28,6 @@ Deno.serve(async (req) => {
       global: { headers: { Authorization: authHeader } }
     })
 
-    // Verify the user is authenticated
     const token = authHeader.replace('Bearer ', '')
     const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(token)
     
@@ -43,7 +41,6 @@ Deno.serve(async (req) => {
     const userId = claimsData.claims.sub
     const userEmail = claimsData.claims.email
 
-    // Parse request body
     const { inviteToken } = await req.json()
 
     if (!inviteToken || typeof inviteToken !== 'string') {
@@ -53,13 +50,11 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Use service role client for privileged operations
     const adminClient = createClient(supabaseUrl, supabaseServiceKey)
 
-    // Lookup invitation using service role (bypasses RLS)
     const { data: invitation, error: inviteError } = await adminClient
       .from('invitations')
-      .select('id, email, role, accepted_at, expires_at')
+      .select('id, email, role, accepted_at, expires_at, neighborhood_id')
       .eq('token', inviteToken)
       .maybeSingle()
 
@@ -78,7 +73,6 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Check if already accepted
     if (invitation.accepted_at) {
       return new Response(
         JSON.stringify({ error: 'Invitation already used' }),
@@ -86,7 +80,6 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Check if expired
     if (new Date(invitation.expires_at) < new Date()) {
       return new Response(
         JSON.stringify({ error: 'Invitation has expired' }),
@@ -94,7 +87,6 @@ Deno.serve(async (req) => {
       )
     }
 
-    // CRITICAL SECURITY CHECK: Verify email matches
     if (invitation.email.toLowerCase() !== userEmail?.toLowerCase()) {
       console.warn(`Email mismatch: invitation for ${invitation.email}, user is ${userEmail}`)
       return new Response(
@@ -103,7 +95,6 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Check if user already has a role
     const { data: existingRole } = await adminClient
       .from('user_roles')
       .select('id')
@@ -117,12 +108,13 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Assign the role
+    // Assign the role WITH neighborhood scope
     const { error: roleError } = await adminClient
       .from('user_roles')
       .insert({
         user_id: userId,
         role: invitation.role,
+        neighborhood_id: invitation.neighborhood_id || null,
       })
 
     if (roleError) {
@@ -133,7 +125,6 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Mark invitation as accepted
     const { error: updateError } = await adminClient
       .from('invitations')
       .update({ accepted_at: new Date().toISOString() })
@@ -141,13 +132,13 @@ Deno.serve(async (req) => {
 
     if (updateError) {
       console.error('Error updating invitation:', updateError)
-      // Role was assigned, so we'll continue but log the error
     }
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         role: invitation.role,
+        neighborhood_id: invitation.neighborhood_id,
         message: 'Invitation accepted successfully'
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

@@ -54,6 +54,7 @@ export type Database = {
           expires_at: string
           id: string
           invited_by: string
+          neighborhood_id: string | null
           role: Database["public"]["Enums"]["app_role"]
           token: string
         }
@@ -64,6 +65,7 @@ export type Database = {
           expires_at?: string
           id?: string
           invited_by: string
+          neighborhood_id?: string | null
           role: Database["public"]["Enums"]["app_role"]
           token?: string
         }
@@ -74,10 +76,19 @@ export type Database = {
           expires_at?: string
           id?: string
           invited_by?: string
+          neighborhood_id?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           token?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "invitations_neighborhood_id_fkey"
+            columns: ["neighborhood_id"]
+            isOneToOne: false
+            referencedRelation: "neighborhoods"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       members: {
         Row: {
@@ -181,28 +192,40 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          neighborhood_id: string | null
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
+          neighborhood_id?: string | null
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
+          neighborhood_id?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_neighborhood_id_fkey"
+            columns: ["neighborhood_id"]
+            isOneToOne: false
+            referencedRelation: "neighborhoods"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      get_user_neighborhood: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
