@@ -8,6 +8,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   role: UserRole;
+  assignedNeighborhoodId: string | null;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, fullName: string, inviteToken?: string) => Promise<{ error: Error | null }>;
@@ -22,21 +23,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [role, setRole] = useState<UserRole>(null);
+  const [assignedNeighborhoodId, setAssignedNeighborhoodId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchUserRole = async (userId: string) => {
     const { data, error } = await supabase
       .from('user_roles')
-      .select('role')
+      .select('role, neighborhood_id')
       .eq('user_id', userId)
       .maybeSingle();
 
     if (error) {
       console.error('Error fetching user role:', error);
-      return null;
+      return { role: null as UserRole, neighborhoodId: null as string | null };
     }
 
-    return data?.role as UserRole;
+    return {
+      role: (data?.role as UserRole) ?? null,
+      neighborhoodId: (data?.neighborhood_id as string | null) ?? null,
+    };
   };
 
   useEffect(() => {
@@ -47,13 +52,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          // Defer role fetching to avoid blocking
           setTimeout(async () => {
-            const userRole = await fetchUserRole(session.user.id);
+            const { role: userRole, neighborhoodId } = await fetchUserRole(session.user.id);
             setRole(userRole);
+            setAssignedNeighborhoodId(neighborhoodId);
           }, 0);
         } else {
           setRole(null);
+          setAssignedNeighborhoodId(null);
         }
         setIsLoading(false);
       }
@@ -65,8 +71,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
 
       if (session?.user) {
-        const userRole = await fetchUserRole(session.user.id);
+        const { role: userRole, neighborhoodId } = await fetchUserRole(session.user.id);
         setRole(userRole);
+        setAssignedNeighborhoodId(neighborhoodId);
       }
       setIsLoading(false);
     });
@@ -103,12 +110,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     await supabase.auth.signOut();
     setRole(null);
+    setAssignedNeighborhoodId(null);
   };
 
   const value = {
     user,
     session,
     role,
+    assignedNeighborhoodId,
     isLoading,
     signIn,
     signUp,

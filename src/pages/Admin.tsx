@@ -34,6 +34,7 @@ export default function Admin() {
 
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<'super_admin' | 'admin'>('admin');
+  const [inviteNeighborhoodId, setInviteNeighborhoodId] = useState<string>('');
   const [isInviting, setIsInviting] = useState(false);
 
   const [newNeighborhood, setNewNeighborhood] = useState('');
@@ -58,8 +59,12 @@ export default function Admin() {
     if (!inviteEmail.trim()) return;
 
     setIsInviting(true);
-    await sendInvitation(inviteEmail.trim(), inviteRole, user.id);
+    const neighborhoodId = inviteNeighborhoodId && inviteNeighborhoodId !== 'all' 
+      ? inviteNeighborhoodId 
+      : null;
+    await sendInvitation(inviteEmail.trim(), inviteRole, user.id, neighborhoodId);
     setInviteEmail('');
+    setInviteNeighborhoodId('');
     setIsInviting(false);
   };
 
@@ -200,40 +205,65 @@ export default function Admin() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSendInvite} className="flex flex-col sm:flex-row gap-3">
-                  <Input
-                    type="email"
-                    placeholder="admin@example.com"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    className="flex-1"
-                  />
-                  <Select
-                    value={inviteRole}
-                    onValueChange={(v) => setInviteRole(v as 'super_admin' | 'admin')}
-                  >
-                    <SelectTrigger className="w-full sm:w-40">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="admin">Admin</SelectItem>
-                      <SelectItem value="super_admin">Super Admin</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    type="submit"
-                    disabled={!inviteEmail.trim() || isInviting}
-                    className="gradient-warm"
-                  >
-                    {isInviting ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <>
-                        <Plus className="w-4 h-4 mr-2" />
-                        Send Invite
-                      </>
-                    )}
-                  </Button>
+                <form onSubmit={handleSendInvite} className="space-y-4">
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Input
+                      type="email"
+                      placeholder="admin@example.com"
+                      value={inviteEmail}
+                      onChange={(e) => setInviteEmail(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Select
+                      value={inviteRole}
+                      onValueChange={(v) => setInviteRole(v as 'super_admin' | 'admin')}
+                    >
+                      <SelectTrigger className="w-full sm:w-40">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="admin">Admin</SelectItem>
+                        <SelectItem value="super_admin">Super Admin</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3 items-end">
+                    <div className="flex-1 space-y-1.5">
+                      <Label className="text-sm text-muted-foreground">
+                        Assign to neighborhood (optional — leave empty for full access)
+                      </Label>
+                      <Select
+                        value={inviteNeighborhoodId}
+                        onValueChange={setInviteNeighborhoodId}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="All neighborhoods" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All neighborhoods</SelectItem>
+                          {neighborhoods.map((n) => (
+                            <SelectItem key={n.id} value={n.id}>
+                              {n.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button
+                      type="submit"
+                      disabled={!inviteEmail.trim() || isInviting}
+                      className="gradient-warm"
+                    >
+                      {isInviting ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Plus className="w-4 h-4 mr-2" />
+                          Send Invite
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </form>
               </CardContent>
             </Card>
@@ -254,6 +284,7 @@ export default function Admin() {
                       <TableRow>
                         <TableHead>Email</TableHead>
                         <TableHead>Role</TableHead>
+                        <TableHead>Neighborhood</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Expires</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
@@ -265,6 +296,12 @@ export default function Admin() {
                           <TableCell className="font-medium">{inv.email}</TableCell>
                           <TableCell className="capitalize">
                             {inv.role.replace('_', ' ')}
+                          </TableCell>
+                          <TableCell>
+                            {inv.neighborhood_id 
+                              ? neighborhoods.find(n => n.id === inv.neighborhood_id)?.name || 'Unknown'
+                              : <span className="text-muted-foreground">All</span>
+                            }
                           </TableCell>
                           <TableCell>
                             {inv.accepted_at ? (

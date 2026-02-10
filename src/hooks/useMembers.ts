@@ -28,17 +28,24 @@ export function useMembers() {
   const [todayAttendees, setTodayAttendees] = useState<Set<string>>(new Set());
   const [optimisticIds, setOptimisticIds] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
-  const { isAdmin } = useAuth();
+  const { isAdmin, assignedNeighborhoodId } = useAuth();
 
   const today = new Date().toISOString().split('T')[0];
 
   const fetchMembers = useCallback(async () => {
     if (!isAdmin) return;
 
-    const { data, error } = await supabase
+    let query = supabase
       .from('members')
       .select('*, neighborhood:neighborhoods(id, name)')
       .order('name');
+
+    // If admin is scoped to a neighborhood, only fetch those members
+    if (assignedNeighborhoodId) {
+      query = query.eq('neighborhood_id', assignedNeighborhoodId);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error('Error fetching members:', error);
@@ -50,7 +57,7 @@ export function useMembers() {
       ...m,
       type: m.type as 'regular' | 'visitor',
     })));
-  }, [isAdmin]);
+  }, [isAdmin, assignedNeighborhoodId]);
 
   const fetchNeighborhoods = useCallback(async () => {
     const { data, error } = await supabase
