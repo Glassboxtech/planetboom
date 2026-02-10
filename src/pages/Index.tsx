@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMembers } from '@/hooks/useMembers';
 import { StatsCards } from '@/components/StatsCards';
@@ -7,11 +7,12 @@ import { AddMemberDialog } from '@/components/AddMemberDialog';
 import { FilterTabs } from '@/components/FilterTabs';
 import { NeighborhoodFilter } from '@/components/NeighborhoodFilter';
 import { EventHeader } from '@/components/EventHeader';
-import { Search, LogOut, Settings, Shield, BarChart3 } from 'lucide-react';
+import { Search, LogOut, Settings, Shield, BarChart3, Download, Upload } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Navigate, Link } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
+import { exportToExcel, importFromExcel } from '@/lib/excelUtils';
 
 const Index = () => {
   const { user, isLoading: authLoading, signOut, isAdmin, isSuperAdmin } = useAuth();
@@ -26,7 +27,25 @@ const Index = () => {
     addMember,
     deleteMember,
     flagMember,
+    addNeighborhood,
+    refetch,
   } = useMembers();
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isImporting, setIsImporting] = useState(false);
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsImporting(true);
+    try {
+      const added = await importFromExcel(file, neighborhoods, addNeighborhood);
+      if (added > 0) await refetch();
+    } finally {
+      setIsImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
 
   const [filter, setFilter] = useState<'all' | 'regular' | 'visitor'>('all');
   const [neighborhoodFilter, setNeighborhoodFilter] = useState<string | null>(null);
@@ -95,6 +114,25 @@ const Index = () => {
                   <BarChart3 className="w-4 h-4" />
                 </Button>
               </Link>
+              <Button variant="outline" size="icon" title="Export to Excel" onClick={exportToExcel}>
+                <Download className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                title="Import from Excel"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isImporting}
+              >
+                {isImporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".xlsx,.xls"
+                className="hidden"
+                onChange={handleImport}
+              />
               {isSuperAdmin && (
                 <Link to="/admin">
                   <Button variant="outline" size="icon">
