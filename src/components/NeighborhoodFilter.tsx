@@ -31,11 +31,11 @@ export function NeighborhoodFilter({
       <SelectTrigger className="w-full sm:w-[200px] h-11 bg-card border-border">
         <div className="flex items-center gap-2">
           <MapPin className="w-4 h-4 text-muted-foreground" />
-          <SelectValue placeholder="All Neighborhoods" />
+          <SelectValue placeholder="All Suburbs" />
         </div>
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="all">All Neighborhoods</SelectItem>
+        <SelectItem value="all">All Suburbs</SelectItem>
         {neighborhoods.map((neighborhood) => (
           <SelectItem key={neighborhood.id} value={neighborhood.id}>
             {neighborhood.name}

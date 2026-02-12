@@ -92,38 +92,56 @@ export type Database = {
       }
       members: {
         Row: {
+          address: string | null
           attendance_count: number
           created_at: string
+          dob: string | null
+          first_name: string
           first_visit: string
           flag_count: number
+          gender: string | null
           id: string
+          last_name: string
           name: string
           neighborhood_id: string | null
           phone: string | null
+          status: string | null
           type: string
           updated_at: string
         }
         Insert: {
+          address?: string | null
           attendance_count?: number
           created_at?: string
+          dob?: string | null
+          first_name?: string
           first_visit?: string
           flag_count?: number
+          gender?: string | null
           id?: string
+          last_name?: string
           name: string
           neighborhood_id?: string | null
           phone?: string | null
+          status?: string | null
           type?: string
           updated_at?: string
         }
         Update: {
+          address?: string | null
           attendance_count?: number
           created_at?: string
+          dob?: string | null
+          first_name?: string
           first_visit?: string
           flag_count?: number
+          gender?: string | null
           id?: string
+          last_name?: string
           name?: string
           neighborhood_id?: string | null
           phone?: string | null
+          status?: string | null
           type?: string
           updated_at?: string
         }
