@@ -111,7 +111,7 @@ export default function Admin() {
                 Super Admin Dashboard
               </h1>
               <p className="text-sm text-muted-foreground">
-                Manage invitations and neighborhoods
+                Manage invitations and suburbs
               </p>
             </div>
           </div>
@@ -126,7 +126,7 @@ export default function Admin() {
               Map
             </TabsTrigger>
             <TabsTrigger value="invitations">Invitations</TabsTrigger>
-            <TabsTrigger value="neighborhoods">Neighborhoods</TabsTrigger>
+            <TabsTrigger value="neighborhoods">Suburbs</TabsTrigger>
           </TabsList>
 
           <TabsContent value="map" className="space-y-6">
@@ -137,7 +137,7 @@ export default function Admin() {
                   Member Density Map
                 </CardTitle>
                 <CardDescription>
-                  Geographic distribution of youth members across neighborhoods
+                  Geographic distribution of youth members across suburbs
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -170,7 +170,7 @@ export default function Admin() {
               <Card>
                 <CardContent className="pt-6">
                   <div className="text-2xl font-bold">{neighborhoods.length}</div>
-                  <p className="text-sm text-muted-foreground">Neighborhoods</p>
+                  <p className="text-sm text-muted-foreground">Suburbs</p>
                 </CardContent>
               </Card>
               <Card>
@@ -230,17 +230,17 @@ export default function Admin() {
                   <div className="flex flex-col sm:flex-row gap-3 items-end">
                     <div className="flex-1 space-y-1.5">
                       <Label className="text-sm text-muted-foreground">
-                        Assign to neighborhood (optional — leave empty for full access)
+                        Assign to suburb (optional — leave empty for full access)
                       </Label>
                       <Select
                         value={inviteNeighborhoodId}
                         onValueChange={setInviteNeighborhoodId}
                       >
                         <SelectTrigger className="w-full">
-                          <SelectValue placeholder="All neighborhoods" />
+                          <SelectValue placeholder="All suburbs" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">All neighborhoods</SelectItem>
+                          <SelectItem value="all">All suburbs</SelectItem>
                           {neighborhoods.map((n) => (
                             <SelectItem key={n.id} value={n.id}>
                               {n.name}
@@ -284,7 +284,7 @@ export default function Admin() {
                       <TableRow>
                         <TableHead>Email</TableHead>
                         <TableHead>Role</TableHead>
-                        <TableHead>Neighborhood</TableHead>
+                        <TableHead>Suburb</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Expires</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
@@ -348,10 +348,10 @@ export default function Admin() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <MapPin className="w-5 h-5" />
-                  Add Neighborhood
+                   Add Suburb
                 </CardTitle>
                 <CardDescription>
-                  Add new neighborhoods for member location tracking
+                  Add new suburbs for member location tracking
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -395,7 +395,7 @@ export default function Admin() {
                     ) : (
                       <>
                         <Plus className="w-4 h-4 mr-2" />
-                        Add Neighborhood
+                        Add Suburb
                       </>
                     )}
                   </Button>
@@ -406,9 +406,9 @@ export default function Admin() {
             {/* Neighborhood Stats */}
             <Card>
               <CardHeader>
-                <CardTitle>Neighborhoods Overview</CardTitle>
+                <CardTitle>Suburbs Overview</CardTitle>
                 <CardDescription>
-                  Member distribution by neighborhood
+                  Member distribution by suburb
                 </CardDescription>
               </CardHeader>
               <CardContent>

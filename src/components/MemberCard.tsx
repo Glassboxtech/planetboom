@@ -11,7 +11,10 @@ import {
 interface Member {
   id: string;
   name: string;
+  first_name: string;
+  last_name: string;
   phone: string | null;
+  gender: string | null;
   type: 'regular' | 'visitor';
   attendance_count: number;
   flag_count?: number;
@@ -38,6 +41,7 @@ export function MemberCard({
   const flagCount = member.flag_count || 0;
   const isBanned = flagCount >= 3;
   const needsAttention = flagCount >= 2 && flagCount < 3;
+  const displayName = `${member.first_name} ${member.last_name}`.trim() || member.name;
 
   return (
     <div
@@ -55,7 +59,6 @@ export function MemberCard({
       )}
       onClick={onToggle}
     >
-      {/* Banned/Warning indicator */}
       {isBanned && (
         <div className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground text-xs px-2 py-0.5 rounded-full font-medium flex items-center gap-1">
           <AlertTriangle className="w-3 h-3" />
@@ -63,7 +66,6 @@ export function MemberCard({
         </div>
       )}
 
-      {/* Avatar */}
       <div
         className={cn(
           'flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200',
@@ -74,7 +76,6 @@ export function MemberCard({
             : 'bg-muted text-muted-foreground'
         )}
         style={{
-          transform: isCheckedIn && !isOptimistic ? 'scale(1)' : 'scale(1)',
           animation: isCheckedIn && !isOptimistic ? 'checkBounce 0.3s ease-out' : 'none'
         }}
       >
@@ -85,14 +86,13 @@ export function MemberCard({
         )}
       </div>
 
-      {/* Info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <h3 className={cn(
             "font-semibold truncate",
             isBanned ? "text-destructive" : "text-foreground"
           )}>
-            {member.name}
+            {displayName}
           </h3>
           <span
             className={cn(
@@ -104,6 +104,11 @@ export function MemberCard({
           >
             {member.type === 'regular' ? 'Regular' : 'Visitor'}
           </span>
+          {member.gender && (
+            <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-muted text-muted-foreground capitalize">
+              {member.gender}
+            </span>
+          )}
           {flagCount > 0 && (
             <TooltipProvider>
               <Tooltip>
@@ -138,7 +143,6 @@ export function MemberCard({
         </div>
       </div>
 
-      {/* Action buttons */}
       <div className="flex items-center gap-1">
         {onFlag && (
           <TooltipProvider>
@@ -180,7 +184,6 @@ export function MemberCard({
         )}
       </div>
 
-      {/* Check indicator */}
       <div
         className={cn(
           'w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200',

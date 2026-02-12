@@ -6,7 +6,13 @@ import { toast } from 'sonner';
 export interface Member {
   id: string;
   name: string;
+  first_name: string;
+  last_name: string;
   phone: string | null;
+  gender: string | null;
+  dob: string | null;
+  status: string | null;
+  address: string | null;
   type: 'regular' | 'visitor';
   neighborhood_id: string | null;
   first_visit: string;
@@ -40,7 +46,6 @@ export function useMembers() {
       .select('*, neighborhood:neighborhoods(id, name)')
       .order('name');
 
-    // If admin is scoped to a neighborhood, only fetch those members
     if (assignedNeighborhoodId) {
       query = query.eq('neighborhood_id', assignedNeighborhoodId);
     }
@@ -56,6 +61,8 @@ export function useMembers() {
     setMembers(data.map(m => ({
       ...m,
       type: m.type as 'regular' | 'visitor',
+      first_name: m.first_name || '',
+      last_name: m.last_name || '',
     })));
   }, [isAdmin, assignedNeighborhoodId]);
 
@@ -104,24 +111,20 @@ export function useMembers() {
   const toggleCheckIn = useCallback(async (memberId: string) => {
     const isCheckedIn = todayAttendees.has(memberId);
     
-    // Optimistic update - immediately update UI
     setOptimisticIds(prev => new Set([...prev, memberId]));
     
     if (isCheckedIn) {
-      // Optimistic: remove from checked in
       setTodayAttendees((prev) => {
         const next = new Set(prev);
         next.delete(memberId);
         return next;
       });
     } else {
-      // Optimistic: add to checked in
       setTodayAttendees((prev) => new Set([...prev, memberId]));
     }
 
     try {
       if (isCheckedIn) {
-        // Undo check-in
         const { error } = await supabase
           .from('attendance_records')
           .delete()
@@ -130,7 +133,6 @@ export function useMembers() {
 
         if (error) throw error;
 
-        // Decrement attendance count
         const member = members.find((m) => m.id === memberId);
         if (member) {
           await supabase
@@ -139,14 +141,12 @@ export function useMembers() {
             .eq('id', memberId);
         }
       } else {
-        // Check in
         const { error } = await supabase
           .from('attendance_records')
           .insert({ member_id: memberId, event_date: today });
 
         if (error) throw error;
 
-        // Increment attendance count
         const member = members.find((m) => m.id === memberId);
         if (member) {
           await supabase
@@ -156,10 +156,8 @@ export function useMembers() {
         }
       }
 
-      // Refresh members to get updated type (auto-promotion)
       await fetchMembers();
     } catch (error) {
-      // Revert optimistic update on error
       toast.error(isCheckedIn ? 'Failed to undo check-in' : 'Failed to check in');
       if (isCheckedIn) {
         setTodayAttendees((prev) => new Set([...prev, memberId]));
@@ -180,18 +178,30 @@ export function useMembers() {
   }, [todayAttendees, members, today, fetchMembers]);
 
   const addMember = useCallback(async (
-    name: string,
+    firstName: string,
+    lastName: string,
     phone: string,
     type: 'regular' | 'visitor',
-    neighborhoodId: string | null
+    neighborhoodId: string | null,
+    gender: string | null,
+    dob: string | null,
+    status: string | null,
+    address: string | null,
   ) => {
+    const fullName = `${firstName} ${lastName}`.trim();
     const { data, error } = await supabase
       .from('members')
       .insert({
-        name,
+        name: fullName,
+        first_name: firstName,
+        last_name: lastName,
         phone: phone || null,
         type,
         neighborhood_id: neighborhoodId,
+        gender: gender || null,
+        dob: dob || null,
+        status: status || null,
+        address: address || null,
       })
       .select('*, neighborhood:neighborhoods(id, name)')
       .single();
@@ -201,7 +211,7 @@ export function useMembers() {
       return null;
     }
 
-    setMembers((prev) => [...prev, { ...data, type: data.type as 'regular' | 'visitor' }]);
+    setMembers((prev) => [...prev, { ...data, type: data.type as 'regular' | 'visitor', first_name: data.first_name || '', last_name: data.last_name || '' }]);
     toast.success('Member added successfully');
     return data;
   }, []);
@@ -235,15 +245,15 @@ export function useMembers() {
 
     if (error) {
       if (error.code === '23505') {
-        toast.error('Neighborhood already exists');
+        toast.error('Suburb already exists');
       } else {
-        toast.error('Failed to add neighborhood');
+        toast.error('Failed to add suburb');
       }
       return null;
     }
 
     setNeighborhoods((prev) => [...prev, data]);
-    toast.success('Neighborhood added');
+    toast.success('Suburb added');
     return data;
   }, []);
 

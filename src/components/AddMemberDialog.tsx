@@ -24,30 +24,55 @@ interface Neighborhood {
 }
 
 interface AddMemberDialogProps {
-  onAddMember: (name: string, phone: string, type: 'regular' | 'visitor', neighborhoodId: string | null) => Promise<unknown>;
+  onAddMember: (
+    firstName: string,
+    lastName: string,
+    phone: string,
+    type: 'regular' | 'visitor',
+    neighborhoodId: string | null,
+    gender: string | null,
+    dob: string | null,
+    status: string | null,
+    address: string | null,
+  ) => Promise<unknown>;
   neighborhoods: Neighborhood[];
 }
 
 export function AddMemberDialog({ onAddMember, neighborhoods }: AddMemberDialogProps) {
   const [open, setOpen] = useState(false);
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [gender, setGender] = useState('');
   const [phone, setPhone] = useState('');
+  const [dob, setDob] = useState('');
+  const [status, setStatus] = useState('');
+  const [address, setAddress] = useState('');
   const [type, setType] = useState<'regular' | 'visitor'>('visitor');
   const [neighborhoodId, setNeighborhoodId] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (name.trim()) {
+    if (firstName.trim()) {
       setIsSubmitting(true);
       await onAddMember(
-        name.trim(),
+        firstName.trim(),
+        lastName.trim(),
         phone.trim(),
         type,
-        neighborhoodId === 'unknown' ? null : (neighborhoodId || null)
+        neighborhoodId === 'unknown' ? null : (neighborhoodId || null),
+        gender || null,
+        dob || null,
+        status || null,
+        address.trim() || null,
       );
-      setName('');
+      setFirstName('');
+      setLastName('');
+      setGender('');
       setPhone('');
+      setDob('');
+      setStatus('');
+      setAddress('');
       setType('visitor');
       setNeighborhoodId('');
       setOpen(false);
@@ -63,59 +88,124 @@ export function AddMemberDialog({ onAddMember, neighborhoods }: AddMemberDialogP
           Add Person
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl">Add New Person</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-5 pt-4">
+        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor="firstName">First Name *</Label>
+              <Input
+                id="firstName"
+                placeholder="First name"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                className="h-11"
+                autoFocus
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="lastName">Last Name</Label>
+              <Input
+                id="lastName"
+                placeholder="Last name"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                className="h-11"
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>Gender</Label>
+              <Select value={gender} onValueChange={setGender}>
+                <SelectTrigger className="h-11">
+                  <SelectValue placeholder="Select gender" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="male">Male</SelectItem>
+                  <SelectItem value="female">Female</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="dob">Date of Birth</Label>
+              <Input
+                id="dob"
+                type="date"
+                value={dob}
+                onChange={(e) => setDob(e.target.value)}
+                className="h-11"
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor="phone">Mobile</Label>
+              <Input
+                id="phone"
+                placeholder="555-0123"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="h-11"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <Select value={status} onValueChange={setStatus}>
+                <SelectTrigger className="h-11">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="single">Single</SelectItem>
+                  <SelectItem value="married">Married</SelectItem>
+                  <SelectItem value="divorced">Divorced</SelectItem>
+                  <SelectItem value="widowed">Widowed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
           <div className="space-y-2">
-            <Label htmlFor="name">Name *</Label>
+            <Label htmlFor="address">Address</Label>
             <Input
-              id="name"
-              placeholder="Enter full name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              id="address"
+              placeholder="Enter address"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
               className="h-11"
-              autoFocus
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="phone">Phone (optional)</Label>
-            <Input
-              id="phone"
-              placeholder="555-0123"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="h-11"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Neighborhood</Label>
-            <Select value={neighborhoodId} onValueChange={setNeighborhoodId}>
-              <SelectTrigger className="h-11">
-                <SelectValue placeholder="Select neighborhood" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="unknown">Unknown</SelectItem>
-                {neighborhoods.map((n) => (
-                  <SelectItem key={n.id} value={n.id}>
-                    {n.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Member Type</Label>
-            <Select value={type} onValueChange={(v) => setType(v as 'regular' | 'visitor')}>
-              <SelectTrigger className="h-11">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="visitor">New Visitor</SelectItem>
-                <SelectItem value="regular">Regular Member</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>Suburb</Label>
+              <Select value={neighborhoodId} onValueChange={setNeighborhoodId}>
+                <SelectTrigger className="h-11">
+                  <SelectValue placeholder="Select suburb" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="unknown">Unknown</SelectItem>
+                  {neighborhoods.map((n) => (
+                    <SelectItem key={n.id} value={n.id}>
+                      {n.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Member Type</Label>
+              <Select value={type} onValueChange={(v) => setType(v as 'regular' | 'visitor')}>
+                <SelectTrigger className="h-11">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="visitor">New Visitor</SelectItem>
+                  <SelectItem value="regular">Regular Member</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <div className="flex gap-3 pt-2">
             <Button
@@ -128,7 +218,7 @@ export function AddMemberDialog({ onAddMember, neighborhoods }: AddMemberDialogP
             </Button>
             <Button
               type="submit"
-              disabled={!name.trim() || isSubmitting}
+              disabled={!firstName.trim() || isSubmitting}
               className="flex-1 gradient-warm text-primary-foreground"
             >
               {isSubmitting ? 'Adding...' : 'Add Person'}

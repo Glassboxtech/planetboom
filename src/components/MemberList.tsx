@@ -44,7 +44,7 @@ export function MemberList({
       <div className="text-center py-12 text-muted-foreground">
         <p>
           No {filter === 'all' ? 'members' : filter === 'regular' ? 'regulars' : 'visitors'} 
-          {neighborhoodFilter ? ' in this neighborhood' : ''} yet.
+          {neighborhoodFilter ? ' in this suburb' : ''} yet.
         </p>
       </div>
     );

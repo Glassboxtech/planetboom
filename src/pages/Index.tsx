@@ -90,9 +90,11 @@ const Index = () => {
     );
   }
 
-  const filteredMembers = members.filter((member) =>
-    member.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredMembers = members.filter((member) => {
+    const fullName = `${member.first_name} ${member.last_name}`.trim().toLowerCase();
+    const query = searchQuery.toLowerCase();
+    return fullName.includes(query) || member.name.toLowerCase().includes(query);
+  });
 
   return (
     <div className="min-h-screen bg-background">
