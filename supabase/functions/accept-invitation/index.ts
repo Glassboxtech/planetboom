@@ -2,11 +2,15 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
+}
+
+// Validate token is exactly 64 hex characters
+function isValidToken(token: unknown): token is string {
+  return typeof token === 'string' && /^[a-f0-9]{64}$/.test(token);
 }
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -41,11 +45,13 @@ Deno.serve(async (req) => {
     const userId = claimsData.claims.sub
     const userEmail = claimsData.claims.email
 
-    const { inviteToken } = await req.json()
+    const body = await req.json()
+    const { inviteToken } = body
 
-    if (!inviteToken || typeof inviteToken !== 'string') {
+    // Validate invite token format: must be exactly 64 hex chars
+    if (!isValidToken(inviteToken)) {
       return new Response(
-        JSON.stringify({ error: 'Invalid invitation token' }),
+        JSON.stringify({ error: 'Invalid invitation token format' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -108,7 +114,6 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Assign the role WITH neighborhood scope
     const { error: roleError } = await adminClient
       .from('user_roles')
       .insert({
