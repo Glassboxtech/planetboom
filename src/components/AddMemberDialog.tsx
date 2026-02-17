@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { UserPlus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { UserPlus, FileCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -39,6 +40,7 @@ interface AddMemberDialogProps {
 }
 
 export function AddMemberDialog({ onAddMember, neighborhoods }: AddMemberDialogProps) {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -55,7 +57,7 @@ export function AddMemberDialog({ onAddMember, neighborhoods }: AddMemberDialogP
     e.preventDefault();
     if (firstName.trim()) {
       setIsSubmitting(true);
-      await onAddMember(
+      const result = await onAddMember(
         firstName.trim(),
         lastName.trim(),
         phone.trim(),
@@ -66,6 +68,7 @@ export function AddMemberDialog({ onAddMember, neighborhoods }: AddMemberDialogP
         status || null,
         address.trim() || null,
       );
+      const newMemberId = (result as { id?: string } | null)?.id;
       setFirstName('');
       setLastName('');
       setGender('');
@@ -77,6 +80,15 @@ export function AddMemberDialog({ onAddMember, neighborhoods }: AddMemberDialogP
       setNeighborhoodId('');
       setOpen(false);
       setIsSubmitting(false);
+      // Offer consent form for new member
+      if (newMemberId) {
+        const shouldConsent = window.confirm(
+          'Would you like to fill in a consent form for this person? (e.g. if a parent/guardian is present)'
+        );
+        if (shouldConsent) {
+          navigate(`/consent?memberId=${newMemberId}`);
+        }
+      }
     }
   };
 

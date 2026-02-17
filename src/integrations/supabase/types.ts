@@ -46,6 +46,83 @@ export type Database = {
           },
         ]
       }
+      consent_forms: {
+        Row: {
+          additional_notes: string | null
+          allergies: string | null
+          created_at: string
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          emergency_contact_relationship: string | null
+          id: string
+          medical_aid_name: string | null
+          medical_aid_number: string | null
+          medical_conditions: string | null
+          medications: string | null
+          member_id: string
+          parent_email: string | null
+          parent_full_name: string
+          parent_id_number: string | null
+          parent_phone: string | null
+          parent_relationship: string
+          signature_acknowledged: boolean
+          signed_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          additional_notes?: string | null
+          allergies?: string | null
+          created_at?: string
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
+          id?: string
+          medical_aid_name?: string | null
+          medical_aid_number?: string | null
+          medical_conditions?: string | null
+          medications?: string | null
+          member_id: string
+          parent_email?: string | null
+          parent_full_name: string
+          parent_id_number?: string | null
+          parent_phone?: string | null
+          parent_relationship: string
+          signature_acknowledged?: boolean
+          signed_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          additional_notes?: string | null
+          allergies?: string | null
+          created_at?: string
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
+          id?: string
+          medical_aid_name?: string | null
+          medical_aid_number?: string | null
+          medical_conditions?: string | null
+          medications?: string | null
+          member_id?: string
+          parent_email?: string | null
+          parent_full_name?: string
+          parent_id_number?: string | null
+          parent_phone?: string | null
+          parent_relationship?: string
+          signature_acknowledged?: boolean
+          signed_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consent_forms_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invitations: {
         Row: {
           accepted_at: string | null
@@ -94,6 +171,7 @@ export type Database = {
         Row: {
           address: string | null
           attendance_count: number
+          consent_signed: boolean
           created_at: string
           dob: string | null
           first_name: string
@@ -112,6 +190,7 @@ export type Database = {
         Insert: {
           address?: string | null
           attendance_count?: number
+          consent_signed?: boolean
           created_at?: string
           dob?: string | null
           first_name?: string
@@ -130,6 +209,7 @@ export type Database = {
         Update: {
           address?: string | null
           attendance_count?: number
+          consent_signed?: boolean
           created_at?: string
           dob?: string | null
           first_name?: string
