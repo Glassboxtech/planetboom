@@ -18,6 +18,7 @@ export interface Member {
   first_visit: string;
   attendance_count: number;
   flag_count: number;
+  consent_signed: boolean;
   neighborhood?: { id: string; name: string } | null;
 }
 

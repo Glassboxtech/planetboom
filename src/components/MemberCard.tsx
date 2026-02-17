@@ -1,4 +1,5 @@
-import { Check, User, MapPin, Trash2, Flag, AlertTriangle } from 'lucide-react';
+import { Check, User, MapPin, Trash2, Flag, AlertTriangle, FileCheck } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,6 +19,7 @@ interface Member {
   type: 'regular' | 'visitor';
   attendance_count: number;
   flag_count?: number;
+  consent_signed?: boolean;
   neighborhood?: { id: string; name: string } | null;
 }
 
@@ -38,6 +40,7 @@ export function MemberCard({
   onDelete,
   onFlag,
 }: MemberCardProps) {
+  const navigate = useNavigate();
   const flagCount = member.flag_count || 0;
   const isBanned = flagCount >= 3;
   const needsAttention = flagCount >= 2 && flagCount < 3;
@@ -144,6 +147,29 @@ export function MemberCard({
       </div>
 
       <div className="flex items-center gap-1">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  'opacity-0 group-hover:opacity-100 transition-opacity',
+                  member.consent_signed ? 'text-accent' : 'text-muted-foreground hover:text-primary'
+                )}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/consent?memberId=${member.id}`);
+                }}
+              >
+                <FileCheck className="w-4 h-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{member.consent_signed ? 'View/Edit consent form' : 'Fill consent form'}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         {onFlag && (
           <TooltipProvider>
             <Tooltip>
