@@ -1,4 +1,4 @@
-import { Check, User, MapPin, Trash2, Flag, AlertTriangle, FileCheck, Pencil } from 'lucide-react';
+import { Check, User, MapPin, Trash2, Flag, FlagOff, AlertTriangle, FileCheck, Pencil } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -30,6 +30,7 @@ interface MemberCardProps {
   onToggle: () => void;
   onDelete?: () => void;
   onFlag?: () => void;
+  onUnflag?: () => void;
   onEdit?: () => void;
 }
 
@@ -40,6 +41,7 @@ export function MemberCard({
   onToggle, 
   onDelete,
   onFlag,
+  onUnflag,
   onEdit,
 }: MemberCardProps) {
   const navigate = useNavigate();
@@ -215,6 +217,28 @@ export function MemberCard({
               </TooltipTrigger>
               <TooltipContent>
                 <p>Add flag ({flagCount}/3)</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
+        {onUnflag && flagCount > 0 && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-accent"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onUnflag();
+                  }}
+                >
+                  <FlagOff className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Remove flag ({flagCount}/3)</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
