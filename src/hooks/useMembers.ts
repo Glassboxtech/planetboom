@@ -309,6 +309,37 @@ export function useMembers() {
     return true;
   }, [members]);
 
+  const updateMember = useCallback(async (memberId: string, updates: {
+    first_name: string;
+    last_name: string;
+    gender: string | null;
+    dob: string | null;
+    status: string | null;
+    address: string | null;
+    phone: string | null;
+    neighborhood_id: string | null;
+    type: 'regular' | 'visitor';
+  }) => {
+    const fullName = `${updates.first_name} ${updates.last_name}`.trim();
+    const { data, error } = await supabase
+      .from('members')
+      .update({ ...updates, name: fullName })
+      .eq('id', memberId)
+      .select('*, neighborhood:neighborhoods(id, name)')
+      .single();
+
+    if (error) {
+      toast.error('Failed to update member');
+      return false;
+    }
+
+    setMembers((prev) =>
+      prev.map((m) => m.id === memberId ? { ...data, type: data.type as 'regular' | 'visitor', first_name: data.first_name || '', last_name: data.last_name || '' } : m)
+    );
+    toast.success('Member updated successfully');
+    return true;
+  }, []);
+
   const stats = {
     totalMembers: members.length,
     regulars: members.filter((m) => m.type === 'regular').length,
@@ -325,6 +356,7 @@ export function useMembers() {
     isLoading,
     toggleCheckIn,
     addMember,
+    updateMember,
     deleteMember,
     flagMember,
     unflagMember,

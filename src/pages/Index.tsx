@@ -1,9 +1,10 @@
 import { useState, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useMembers } from '@/hooks/useMembers';
+import { useMembers, Member } from '@/hooks/useMembers';
 import { StatsCards } from '@/components/StatsCards';
 import { MemberList } from '@/components/MemberList';
 import { AddMemberDialog } from '@/components/AddMemberDialog';
+import { EditMemberDialog } from '@/components/EditMemberDialog';
 import { FilterTabs } from '@/components/FilterTabs';
 import { NeighborhoodFilter } from '@/components/NeighborhoodFilter';
 import { EventHeader } from '@/components/EventHeader';
@@ -25,11 +26,14 @@ const Index = () => {
     isLoading,
     toggleCheckIn,
     addMember,
+    updateMember,
     deleteMember,
     flagMember,
     addNeighborhood,
     refetch,
   } = useMembers();
+
+  const [editingMember, setEditingMember] = useState<Member | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImporting, setIsImporting] = useState(false);
@@ -203,11 +207,22 @@ const Index = () => {
               onToggleCheckIn={toggleCheckIn}
               onDeleteMember={deleteMember}
               onFlagMember={flagMember}
+              onEditMember={setEditingMember}
               filter={filter}
               neighborhoodFilter={neighborhoodFilter}
             />
           )}
         </div>
+
+        {editingMember && (
+          <EditMemberDialog
+            member={editingMember}
+            neighborhoods={neighborhoods}
+            open={!!editingMember}
+            onOpenChange={(open) => !open && setEditingMember(null)}
+            onSave={updateMember}
+          />
+        )}
       </main>
     </div>
   );
