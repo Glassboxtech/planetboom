@@ -8,6 +8,7 @@ interface MemberListProps {
   onToggleCheckIn: (memberId: string) => void;
   onDeleteMember?: (memberId: string) => void;
   onFlagMember?: (memberId: string) => void;
+  onUnflagMember?: (memberId: string) => void;
   onEditMember?: (member: Member) => void;
   filter: 'all' | 'regular' | 'visitor';
   neighborhoodFilter?: string | null;
@@ -20,6 +21,7 @@ export function MemberList({
   onToggleCheckIn,
   onDeleteMember,
   onFlagMember,
+  onUnflagMember,
   onEditMember,
   filter,
   neighborhoodFilter,
@@ -63,6 +65,7 @@ export function MemberList({
           onToggle={() => onToggleCheckIn(member.id)}
           onDelete={onDeleteMember ? () => onDeleteMember(member.id) : undefined}
           onFlag={onFlagMember ? () => onFlagMember(member.id) : undefined}
+          onUnflag={onUnflagMember ? () => onUnflagMember(member.id) : undefined}
           onEdit={onEditMember ? () => onEditMember(member) : undefined}
         />
       ))}

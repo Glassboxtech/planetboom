@@ -29,6 +29,7 @@ const Index = () => {
     updateMember,
     deleteMember,
     flagMember,
+    unflagMember,
     addNeighborhood,
     refetch,
   } = useMembers();
@@ -207,6 +208,7 @@ const Index = () => {
               onToggleCheckIn={toggleCheckIn}
               onDeleteMember={deleteMember}
               onFlagMember={flagMember}
+              onUnflagMember={unflagMember}
               onEditMember={setEditingMember}
               filter={filter}
               neighborhoodFilter={neighborhoodFilter}
