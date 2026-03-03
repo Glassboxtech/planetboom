@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Navigate, Link } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { exportToExcel, importFromExcel } from '@/lib/excelUtils';
 
 const Index = () => {
@@ -54,6 +55,7 @@ const Index = () => {
 
   const [filter, setFilter] = useState<'all' | 'regular' | 'visitor'>('all');
   const [neighborhoodFilter, setNeighborhoodFilter] = useState<string | null>(null);
+  const [consentFilter, setConsentFilter] = useState<'all' | 'pending' | 'signed'>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Get current Friday for event header
@@ -98,7 +100,10 @@ const Index = () => {
   const filteredMembers = members.filter((member) => {
     const fullName = `${member.first_name} ${member.last_name}`.trim().toLowerCase();
     const query = searchQuery.toLowerCase();
-    return fullName.includes(query) || member.name.toLowerCase().includes(query);
+    if (!fullName.includes(query) && !member.name.toLowerCase().includes(query)) return false;
+    if (consentFilter === 'pending' && member.consent_signed) return false;
+    if (consentFilter === 'signed' && !member.consent_signed) return false;
+    return true;
   });
 
   return (
@@ -183,16 +188,41 @@ const Index = () => {
             />
           </div>
 
-          <FilterTabs
-            activeFilter={filter}
-            onFilterChange={setFilter}
-            counts={{
-              all: members.length,
-              regular: stats.regulars,
-              visitor: stats.visitors,
-            }}
-          />
-        </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3">
+            <FilterTabs
+              activeFilter={filter}
+              onFilterChange={setFilter}
+              counts={{
+                all: members.length,
+                regular: stats.regulars,
+                visitor: stats.visitors,
+              }}
+            />
+          </div>
+
+          <div className="flex gap-2">
+            {(['all', 'pending', 'signed'] as const).map((value) => {
+              const label = value === 'all' ? 'All Consent' : value === 'pending' ? 'Pending' : 'Signed';
+              const count = value === 'all' ? members.length : value === 'pending' ? members.filter(m => !m.consent_signed).length : members.filter(m => m.consent_signed).length;
+              return (
+                <button
+                  key={value}
+                  onClick={() => setConsentFilter(value)}
+                  className={cn(
+                    'px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
+                    consentFilter === value
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'bg-secondary/50 text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  {label}
+                  <span className="ml-1 opacity-70">({count})</span>
+                </button>
+              );
+            })}
+          </div>
 
         {/* Member List */}
         <div className="pb-6">
