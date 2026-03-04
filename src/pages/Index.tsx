@@ -9,6 +9,7 @@ import { FilterTabs } from '@/components/FilterTabs';
 import { NeighborhoodFilter } from '@/components/NeighborhoodFilter';
 import { EventHeader } from '@/components/EventHeader';
 import { Search, LogOut, Settings, Shield, BarChart3, Download, Upload } from 'lucide-react';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Navigate, Link } from 'react-router-dom';
@@ -154,6 +155,7 @@ const Index = () => {
                 </Link>
               )}
               <AddMemberDialog onAddMember={addMember} neighborhoods={neighborhoods} />
+              <ThemeToggle />
               <Button variant="ghost" size="icon" onClick={signOut} className="text-muted-foreground hover:text-destructive">
                 <LogOut className="w-4 h-4" />
               </Button>
