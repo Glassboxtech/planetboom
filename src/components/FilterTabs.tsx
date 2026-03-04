@@ -18,20 +18,20 @@ export function FilterTabs({ activeFilter, onFilterChange, counts }: FilterTabsP
   ];
 
   return (
-    <div className="flex gap-2 bg-secondary/50 p-1.5 rounded-xl">
+    <div className="flex gap-1 bg-secondary/60 p-1 rounded-lg">
       {tabs.map((tab) => (
         <button
           key={tab.value}
           onClick={() => onFilterChange(tab.value)}
           className={cn(
-            'flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all',
+            'flex-1 px-4 py-2 rounded-md text-sm font-medium transition-all',
             activeFilter === tab.value
               ? 'bg-card text-foreground shadow-sm'
               : 'text-muted-foreground hover:text-foreground'
           )}
         >
           {tab.label}
-          <span className="ml-2 text-xs opacity-70">({tab.count})</span>
+          <span className="ml-1.5 text-xs opacity-60">({tab.count})</span>
         </button>
       ))}
     </div>

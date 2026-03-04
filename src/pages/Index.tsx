@@ -109,32 +109,33 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b border-border">
-        <div className="container py-4">
+      <header className="sticky top-0 z-10 bg-card/90 backdrop-blur-lg border-b border-border shadow-sm">
+        <div className="container py-3">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-foreground tracking-tight">
+              <h1 className="text-xl font-bold text-foreground tracking-tight">
                 Youth Check-In
               </h1>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Friday Youth Group Attendance
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <Link to="/history">
-                <Button variant="outline" size="icon" title="Attendance History">
+                <Button variant="ghost" size="icon" title="Attendance History" className="text-muted-foreground hover:text-foreground">
                   <BarChart3 className="w-4 h-4" />
                 </Button>
               </Link>
-              <Button variant="outline" size="icon" title="Export to Excel" onClick={exportToExcel}>
+              <Button variant="ghost" size="icon" title="Export to Excel" onClick={exportToExcel} className="text-muted-foreground hover:text-foreground">
                 <Download className="w-4 h-4" />
               </Button>
               <Button
-                variant="outline"
+                variant="ghost"
                 size="icon"
                 title="Import from Excel"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isImporting}
+                className="text-muted-foreground hover:text-foreground"
               >
                 {isImporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
               </Button>
@@ -147,13 +148,13 @@ const Index = () => {
               />
               {isSuperAdmin && (
                 <Link to="/admin">
-                  <Button variant="outline" size="icon">
+                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
                     <Settings className="w-4 h-4" />
                   </Button>
                 </Link>
               )}
               <AddMemberDialog onAddMember={addMember} neighborhoods={neighborhoods} />
-              <Button variant="ghost" size="icon" onClick={signOut}>
+              <Button variant="ghost" size="icon" onClick={signOut} className="text-muted-foreground hover:text-destructive">
                 <LogOut className="w-4 h-4" />
               </Button>
             </div>
@@ -211,14 +212,14 @@ const Index = () => {
                   key={value}
                   onClick={() => setConsentFilter(value)}
                   className={cn(
-                    'px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
+                    'px-3 py-1.5 rounded-md text-xs font-medium transition-all',
                     consentFilter === value
                       ? 'bg-primary text-primary-foreground shadow-sm'
-                      : 'bg-secondary/50 text-muted-foreground hover:text-foreground'
+                      : 'bg-secondary/60 text-muted-foreground hover:text-foreground'
                   )}
                 >
                   {label}
-                  <span className="ml-1 opacity-70">({count})</span>
+                  <span className="ml-1 opacity-60">({count})</span>
                 </button>
               );
             })}
