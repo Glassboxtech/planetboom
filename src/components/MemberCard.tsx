@@ -53,21 +53,21 @@ export function MemberCard({
   return (
     <div
       className={cn(
-        'group relative flex items-center gap-4 p-4 rounded-2xl transition-all duration-200 cursor-pointer',
-        'active:scale-[0.98] touch-manipulation',
+        'group relative flex items-center gap-4 p-4 rounded-xl transition-all duration-200 cursor-pointer',
+        'active:scale-[0.99] touch-manipulation',
         isBanned 
-          ? 'bg-destructive/10 border-2 border-destructive/50'
+          ? 'bg-destructive/8 border border-destructive/40'
           : needsAttention
-          ? 'bg-warning/10 border-2 border-warning/50'
+          ? 'bg-warning/8 border border-warning/40'
           : isCheckedIn
-          ? 'bg-primary/10 border-2 border-primary shadow-soft'
-          : 'bg-card border border-border hover:border-primary/30 hover:shadow-soft',
+          ? 'bg-primary/6 border border-primary/30 shadow-soft'
+          : 'bg-card border border-border hover:border-primary/20 hover:shadow-soft',
         isOptimistic && 'opacity-70'
       )}
       onClick={onToggle}
     >
       {isBanned && (
-        <div className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground text-xs px-2 py-0.5 rounded-full font-medium flex items-center gap-1">
+        <div className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground text-[10px] px-2 py-0.5 rounded-full font-semibold flex items-center gap-1">
           <AlertTriangle className="w-3 h-3" />
           Banned
         </div>
@@ -75,9 +75,9 @@ export function MemberCard({
 
       <div
         className={cn(
-          'flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200',
+          'flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-200',
           isBanned
-            ? 'bg-destructive/20 text-destructive'
+            ? 'bg-destructive/15 text-destructive'
             : isCheckedIn
             ? 'gradient-warm text-primary-foreground'
             : 'bg-muted text-muted-foreground'
@@ -87,9 +87,9 @@ export function MemberCard({
         }}
       >
         {isCheckedIn ? (
-          <Check className="w-6 h-6" strokeWidth={3} />
+          <Check className="w-5 h-5" strokeWidth={2.5} />
         ) : (
-          <User className="w-6 h-6" />
+          <User className="w-5 h-5" />
         )}
       </div>
 
