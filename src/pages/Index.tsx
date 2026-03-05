@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMembers, Member } from '@/hooks/useMembers';
 import { StatsCards } from '@/components/StatsCards';
@@ -10,6 +10,8 @@ import { NeighborhoodFilter } from '@/components/NeighborhoodFilter';
 import { EventHeader } from '@/components/EventHeader';
 import { Search, LogOut, Settings, Shield, BarChart3, Download, Upload } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { PrintToggle } from '@/components/PrintToggle';
+import { printMemberLabel } from '@/components/PrintLabel';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Navigate, Link } from 'react-router-dom';
@@ -40,6 +42,21 @@ const Index = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImporting, setIsImporting] = useState(false);
+  const [printLabels, setPrintLabels] = useState(false);
+
+  const handleToggleCheckIn = useCallback(async (memberId: string) => {
+    const wasCheckedIn = todayAttendees.has(memberId);
+    await toggleCheckIn(memberId);
+    
+    // Print label only on check-in (not undo), and only if printing is enabled
+    if (!wasCheckedIn && printLabels) {
+      const member = members.find(m => m.id === memberId);
+      if (member) {
+        const today = new Date().toISOString().split('T')[0];
+        printMemberLabel(member, today);
+      }
+    }
+  }, [toggleCheckIn, todayAttendees, printLabels, members]);
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -154,6 +171,7 @@ const Index = () => {
                   </Button>
                 </Link>
               )}
+              <PrintToggle enabled={printLabels} onToggle={() => setPrintLabels(p => !p)} />
               <AddMemberDialog onAddMember={addMember} neighborhoods={neighborhoods} />
               <ThemeToggle />
               <Button variant="ghost" size="icon" onClick={signOut} className="text-muted-foreground hover:text-destructive">
@@ -238,7 +256,7 @@ const Index = () => {
               members={filteredMembers}
               todayAttendees={todayAttendees}
               optimisticIds={optimisticIds}
-              onToggleCheckIn={toggleCheckIn}
+              onToggleCheckIn={handleToggleCheckIn}
               onDeleteMember={deleteMember}
               onFlagMember={flagMember}
               onUnflagMember={unflagMember}
