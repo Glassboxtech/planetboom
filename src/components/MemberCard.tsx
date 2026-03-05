@@ -116,6 +116,18 @@ export function MemberCard({
               {member.gender}
             </span>
           )}
+          {!member.consent_signed && (
+            <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-warning/15 text-warning flex items-center gap-0.5">
+              <FileCheck className="w-3 h-3" />
+              Consent pending
+            </span>
+          )}
+          {member.consent_signed && (
+            <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-accent/15 text-accent flex items-center gap-0.5">
+              <FileCheck className="w-3 h-3" />
+              Signed
+            </span>
+          )}
           {flagCount > 0 && (
             <TooltipProvider>
               <Tooltip>
