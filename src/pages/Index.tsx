@@ -8,19 +8,18 @@ import { EditMemberDialog } from '@/components/EditMemberDialog';
 import { FilterTabs } from '@/components/FilterTabs';
 import { NeighborhoodFilter } from '@/components/NeighborhoodFilter';
 import { EventHeader } from '@/components/EventHeader';
-import { Search, LogOut, Settings, Shield, BarChart3, Download, Upload } from 'lucide-react';
-import { ThemeToggle } from '@/components/ThemeToggle';
+import { AppLayout } from '@/components/AppLayout';
+import { Search, Download, Upload } from 'lucide-react';
 import { PrintToggle } from '@/components/PrintToggle';
 import { printMemberLabel } from '@/components/PrintLabel';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Navigate, Link } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { exportToExcel, importFromExcel } from '@/lib/excelUtils';
 
 const Index = () => {
-  const { user, isLoading: authLoading, signOut, isAdmin, isSuperAdmin } = useAuth();
+  const { isSuperAdmin } = useAuth();
   const {
     members,
     neighborhoods,
@@ -39,7 +38,6 @@ const Index = () => {
   } = useMembers();
 
   const [editingMember, setEditingMember] = useState<Member | null>(null);
-
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [printLabels, setPrintLabels] = useState(false);
@@ -47,8 +45,6 @@ const Index = () => {
   const handleToggleCheckIn = useCallback(async (memberId: string) => {
     const wasCheckedIn = todayAttendees.has(memberId);
     await toggleCheckIn(memberId);
-    
-    // Print label only on check-in (not undo), and only if printing is enabled
     if (!wasCheckedIn && printLabels) {
       const member = members.find(m => m.id === memberId);
       if (member) {
@@ -76,7 +72,6 @@ const Index = () => {
   const [consentFilter, setConsentFilter] = useState<'all' | 'pending' | 'signed'>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Get current Friday for event header
   const getCurrentFriday = (): string => {
     const today = new Date();
     const dayOfWeek = today.getDay();
@@ -85,35 +80,6 @@ const Index = () => {
     friday.setDate(today.getDate() + (dayOfWeek === 5 ? 0 : daysUntilFriday));
     return friday.toISOString().split('T')[0];
   };
-
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
-        <div className="text-center space-y-4">
-          <Shield className="w-16 h-16 mx-auto text-muted-foreground" />
-          <h1 className="text-2xl font-bold">Access Denied</h1>
-          <p className="text-muted-foreground">
-            You need admin privileges to access this app. Contact a Super Admin for an invitation.
-          </p>
-          <Button variant="outline" onClick={signOut}>
-            Sign Out
-          </Button>
-        </div>
-      </div>
-    );
-  }
 
   const filteredMembers = members.filter((member) => {
     const fullName = `${member.first_name} ${member.last_name}`.trim().toLowerCase();
@@ -124,73 +90,33 @@ const Index = () => {
     return true;
   });
 
+  const headerActions = (
+    <>
+      <Button variant="ghost" size="icon" title="Export to Excel" onClick={exportToExcel} className="text-muted-foreground hover:text-foreground">
+        <Download className="w-4 h-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        title="Import from Excel"
+        onClick={() => fileInputRef.current?.click()}
+        disabled={isImporting}
+        className="text-muted-foreground hover:text-foreground"
+      >
+        {isImporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+      </Button>
+      <input ref={fileInputRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={handleImport} />
+      <PrintToggle enabled={printLabels} onToggle={() => setPrintLabels(p => !p)} />
+      <AddMemberDialog onAddMember={addMember} neighborhoods={neighborhoods} />
+    </>
+  );
+
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-card/90 backdrop-blur-lg border-b border-border shadow-sm">
-        <div className="container py-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-bold text-foreground tracking-tight">
-                Youth Check-In
-              </h1>
-              <p className="text-xs text-muted-foreground">
-                Friday Youth Group Attendance
-              </p>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Link to="/history">
-                <Button variant="ghost" size="icon" title="Attendance History" className="text-muted-foreground hover:text-foreground">
-                  <BarChart3 className="w-4 h-4" />
-                </Button>
-              </Link>
-              <Button variant="ghost" size="icon" title="Export to Excel" onClick={exportToExcel} className="text-muted-foreground hover:text-foreground">
-                <Download className="w-4 h-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                title="Import from Excel"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isImporting}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                {isImporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-              </Button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".xlsx,.xls"
-                className="hidden"
-                onChange={handleImport}
-              />
-              {isSuperAdmin && (
-                <Link to="/admin">
-                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-                    <Settings className="w-4 h-4" />
-                  </Button>
-                </Link>
-              )}
-              <PrintToggle enabled={printLabels} onToggle={() => setPrintLabels(p => !p)} />
-              <AddMemberDialog onAddMember={addMember} neighborhoods={neighborhoods} />
-              <ThemeToggle />
-              <Button variant="ghost" size="icon" onClick={signOut} className="text-muted-foreground hover:text-destructive">
-                <LogOut className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="container py-6 space-y-6">
-        {/* Stats */}
+    <AppLayout title="Dashboard" subtitle="Friday Youth Group Attendance" headerActions={headerActions}>
+      <div className="space-y-6">
         <StatsCards {...stats} />
-
-        {/* Current Event */}
         <EventHeader date={getCurrentFriday()} title="Friday Youth Night" />
 
-        {/* Search and Filter */}
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
@@ -208,44 +134,42 @@ const Index = () => {
               onNeighborhoodChange={setNeighborhoodFilter}
             />
           </div>
+        </div>
 
-          </div>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <FilterTabs
+            activeFilter={filter}
+            onFilterChange={setFilter}
+            counts={{
+              all: members.length,
+              regular: stats.regulars,
+              visitor: stats.visitors,
+            }}
+          />
+        </div>
 
-          <div className="flex flex-col sm:flex-row gap-3">
-            <FilterTabs
-              activeFilter={filter}
-              onFilterChange={setFilter}
-              counts={{
-                all: members.length,
-                regular: stats.regulars,
-                visitor: stats.visitors,
-              }}
-            />
-          </div>
+        <div className="flex gap-2">
+          {(['all', 'pending', 'signed'] as const).map((value) => {
+            const label = value === 'all' ? 'All Consent' : value === 'pending' ? 'Pending' : 'Signed';
+            const count = value === 'all' ? members.length : value === 'pending' ? members.filter(m => !m.consent_signed).length : members.filter(m => m.consent_signed).length;
+            return (
+              <button
+                key={value}
+                onClick={() => setConsentFilter(value)}
+                className={cn(
+                  'px-3 py-1.5 rounded-md text-xs font-medium transition-all',
+                  consentFilter === value
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'bg-secondary/60 text-muted-foreground hover:text-foreground'
+                )}
+              >
+                {label}
+                <span className="ml-1 opacity-60">({count})</span>
+              </button>
+            );
+          })}
+        </div>
 
-          <div className="flex gap-2">
-            {(['all', 'pending', 'signed'] as const).map((value) => {
-              const label = value === 'all' ? 'All Consent' : value === 'pending' ? 'Pending' : 'Signed';
-              const count = value === 'all' ? members.length : value === 'pending' ? members.filter(m => !m.consent_signed).length : members.filter(m => m.consent_signed).length;
-              return (
-                <button
-                  key={value}
-                  onClick={() => setConsentFilter(value)}
-                  className={cn(
-                    'px-3 py-1.5 rounded-md text-xs font-medium transition-all',
-                    consentFilter === value
-                      ? 'bg-primary text-primary-foreground shadow-sm'
-                      : 'bg-secondary/60 text-muted-foreground hover:text-foreground'
-                  )}
-                >
-                  {label}
-                  <span className="ml-1 opacity-60">({count})</span>
-                </button>
-              );
-            })}
-          </div>
-
-        {/* Member List */}
         <div className="pb-6">
           {isLoading ? (
             <div className="flex justify-center py-12">
@@ -276,8 +200,8 @@ const Index = () => {
             onSave={updateMember}
           />
         )}
-      </main>
-    </div>
+      </div>
+    </AppLayout>
   );
 };
 

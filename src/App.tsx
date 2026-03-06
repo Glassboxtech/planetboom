@@ -11,6 +11,7 @@ import Signup from "./pages/Signup";
 import Admin from "./pages/Admin";
 import History from "./pages/History";
 import ConsentForm from "./pages/ConsentForm";
+import Branding from "./pages/Branding";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
               <Route path="/admin" element={<Admin />} />
               <Route path="/history" element={<History />} />
               <Route path="/consent" element={<ConsentForm />} />
+              <Route path="/branding" element={<Branding />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
