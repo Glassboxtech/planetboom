@@ -100,7 +100,7 @@ const ConsentFormPage = () => {
   }
 
   if (!user || !isAdmin) return <Navigate to="/login" replace />;
-  if (!memberId) return <Navigate to="/" replace />;
+  if (!memberId) return <Navigate to="/consent" replace />;
 
   return (
     <div className="min-h-screen bg-background">

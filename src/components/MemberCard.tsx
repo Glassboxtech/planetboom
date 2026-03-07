@@ -119,7 +119,7 @@ export function MemberCard({
           {!member.consent_signed && (
             <span
               className="px-2 py-0.5 text-xs font-medium rounded-full bg-warning/15 text-warning flex items-center gap-0.5 cursor-pointer hover:bg-warning/25 transition-colors"
-              onClick={(e) => { e.stopPropagation(); navigate(`/consent?memberId=${member.id}`); }}
+              onClick={(e) => { e.stopPropagation(); navigate(`/consent/form?memberId=${member.id}`); }}
             >
               <FileCheck className="w-3 h-3" />
               Consent pending
@@ -128,7 +128,7 @@ export function MemberCard({
           {member.consent_signed && (
             <span
               className="px-2 py-0.5 text-xs font-medium rounded-full bg-accent/15 text-accent flex items-center gap-0.5 cursor-pointer hover:bg-accent/25 transition-colors"
-              onClick={(e) => { e.stopPropagation(); navigate(`/consent?memberId=${member.id}`); }}
+              onClick={(e) => { e.stopPropagation(); navigate(`/consent/form?memberId=${member.id}`); }}
             >
               <FileCheck className="w-3 h-3" />
               Signed
@@ -203,7 +203,7 @@ export function MemberCard({
                 )}
                 onClick={(e) => {
                   e.stopPropagation();
-                  navigate(`/consent?memberId=${member.id}`);
+                  navigate(`/consent/form?memberId=${member.id}`);
                 }}
               >
                 <FileCheck className="w-4 h-4" />
