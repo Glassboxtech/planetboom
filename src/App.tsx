@@ -13,6 +13,7 @@ import Admin from "./pages/Admin";
 import History from "./pages/History";
 import ConsentForm from "./pages/ConsentForm";
 import ConsentFormsList from "./pages/ConsentFormsList";
+import PublicConsentForm from "./pages/PublicConsentForm";
 import Branding from "./pages/Branding";
 import NotFound from "./pages/NotFound";
 
