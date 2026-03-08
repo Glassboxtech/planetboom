@@ -29,7 +29,7 @@ export interface Neighborhood {
   longitude: number | null;
 }
 
-export function useMembers() {
+export function useMembers(eventDate?: string) {
   const [members, setMembers] = useState<Member[]>([]);
   const [neighborhoods, setNeighborhoods] = useState<Neighborhood[]>([]);
   const [todayAttendees, setTodayAttendees] = useState<Set<string>>(new Set());
@@ -37,7 +37,7 @@ export function useMembers() {
   const [isLoading, setIsLoading] = useState(true);
   const { isAdmin, assignedNeighborhoodId } = useAuth();
 
-  const today = new Date().toISOString().split('T')[0];
+  const activeDate = eventDate || new Date().toISOString().split('T')[0];
 
   const fetchMembers = useCallback(async () => {
     if (!isAdmin) return;
@@ -81,13 +81,13 @@ export function useMembers() {
     setNeighborhoods(data);
   }, []);
 
-  const fetchTodayAttendance = useCallback(async () => {
+  const fetchAttendance = useCallback(async () => {
     if (!isAdmin) return;
 
     const { data, error } = await supabase
       .from('attendance_records')
       .select('member_id')
-      .eq('event_date', today);
+      .eq('event_date', activeDate);
 
     if (error) {
       console.error('Error fetching attendance:', error);
@@ -95,19 +95,19 @@ export function useMembers() {
     }
 
     setTodayAttendees(new Set(data.map((r) => r.member_id)));
-  }, [isAdmin, today]);
+  }, [isAdmin, activeDate]);
 
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
-      await Promise.all([fetchMembers(), fetchNeighborhoods(), fetchTodayAttendance()]);
+      await Promise.all([fetchMembers(), fetchNeighborhoods(), fetchAttendance()]);
       setIsLoading(false);
     };
 
     if (isAdmin) {
       loadData();
     }
-  }, [isAdmin, fetchMembers, fetchNeighborhoods, fetchTodayAttendance]);
+  }, [isAdmin, fetchMembers, fetchNeighborhoods, fetchAttendance]);
 
   const toggleCheckIn = useCallback(async (memberId: string) => {
     const isCheckedIn = todayAttendees.has(memberId);
@@ -130,7 +130,7 @@ export function useMembers() {
           .from('attendance_records')
           .delete()
           .eq('member_id', memberId)
-          .eq('event_date', today);
+          .eq('event_date', activeDate);
 
         if (error) throw error;
 
@@ -144,7 +144,7 @@ export function useMembers() {
       } else {
         const { error } = await supabase
           .from('attendance_records')
-          .insert({ member_id: memberId, event_date: today });
+          .insert({ member_id: memberId, event_date: activeDate });
 
         if (error) throw error;
 
@@ -176,7 +176,7 @@ export function useMembers() {
         return next;
       });
     }
-  }, [todayAttendees, members, today, fetchMembers]);
+  }, [todayAttendees, members, activeDate, fetchMembers]);
 
   const addMember = useCallback(async (
     firstName: string,
