@@ -7,6 +7,10 @@ export interface SiteSettings {
   logo_url: string | null;
   primary_color: string;
   accent_color: string;
+  favicon_url: string | null;
+  foreground_color: string | null;
+  muted_color: string | null;
+  font_family: string | null;
 }
 
 export function useSiteSettings() {
