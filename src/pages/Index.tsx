@@ -17,9 +17,22 @@ import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { exportToExcel, importFromExcel } from '@/lib/excelUtils';
+import { format } from 'date-fns';
 
 const Index = () => {
   const { isSuperAdmin } = useAuth();
+
+  const getDefaultDate = (): string => {
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const daysUntilFriday = dayOfWeek <= 5 ? 5 - dayOfWeek : 7 - dayOfWeek + 5;
+    const friday = new Date(today);
+    friday.setDate(today.getDate() + (dayOfWeek === 5 ? 0 : daysUntilFriday));
+    return friday.toISOString().split('T')[0];
+  };
+
+  const [eventDate, setEventDate] = useState(getDefaultDate);
+
   const {
     members,
     neighborhoods,
@@ -35,7 +48,7 @@ const Index = () => {
     unflagMember,
     addNeighborhood,
     refetch,
-  } = useMembers();
+  } = useMembers(eventDate);
 
   const [editingMember, setEditingMember] = useState<Member | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -48,11 +61,10 @@ const Index = () => {
     if (!wasCheckedIn && printLabels) {
       const member = members.find(m => m.id === memberId);
       if (member) {
-        const today = new Date().toISOString().split('T')[0];
-        printMemberLabel(member, today);
+        printMemberLabel(member, eventDate);
       }
     }
-  }, [toggleCheckIn, todayAttendees, printLabels, members]);
+  }, [toggleCheckIn, todayAttendees, printLabels, members, eventDate]);
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -71,15 +83,6 @@ const Index = () => {
   const [neighborhoodFilter, setNeighborhoodFilter] = useState<string | null>(null);
   const [consentFilter, setConsentFilter] = useState<'all' | 'pending' | 'signed'>('all');
   const [searchQuery, setSearchQuery] = useState('');
-
-  const getCurrentFriday = (): string => {
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-    const daysUntilFriday = dayOfWeek <= 5 ? 5 - dayOfWeek : 7 - dayOfWeek + 5;
-    const friday = new Date(today);
-    friday.setDate(today.getDate() + (dayOfWeek === 5 ? 0 : daysUntilFriday));
-    return friday.toISOString().split('T')[0];
-  };
 
   const filteredMembers = members.filter((member) => {
     const fullName = `${member.first_name} ${member.last_name}`.trim().toLowerCase();
@@ -115,7 +118,11 @@ const Index = () => {
     <AppLayout title="Dashboard" subtitle="Friday Youth Group Attendance" headerActions={headerActions}>
       <div className="space-y-6">
         <StatsCards {...stats} />
-        <EventHeader date={getCurrentFriday()} title="Friday Youth Night" />
+        <EventHeader
+          date={eventDate}
+          title="Friday Youth Night"
+          onDateChange={setEventDate}
+        />
 
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row gap-3">
