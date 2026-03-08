@@ -34,13 +34,6 @@ const PublicConsentForm = () => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const { data, error } = await supabase.functions.invoke('public-consent-form', {
-          method: 'GET',
-          body: undefined,
-          headers: { 'Content-Type': 'application/json' },
-        });
-
-        // supabase.functions.invoke uses POST by default, so we use query params via a fetch
         const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
         const res = await fetch(
           `https://${projectId}.supabase.co/functions/v1/public-consent-form?memberId=${memberId}`,
