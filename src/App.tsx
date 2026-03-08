@@ -13,6 +13,7 @@ import Admin from "./pages/Admin";
 import History from "./pages/History";
 import ConsentForm from "./pages/ConsentForm";
 import ConsentFormsList from "./pages/ConsentFormsList";
+import PublicConsentForm from "./pages/PublicConsentForm";
 import Branding from "./pages/Branding";
 import NotFound from "./pages/NotFound";
 
@@ -35,6 +36,7 @@ const App = () => (
                 <Route path="/history" element={<History />} />
               <Route path="/consent" element={<ConsentFormsList />} />
               <Route path="/consent/form" element={<ConsentForm />} />
+              <Route path="/consent/public" element={<PublicConsentForm />} />
                 <Route path="/branding" element={<Branding />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />

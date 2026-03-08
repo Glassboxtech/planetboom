@@ -244,7 +244,7 @@ ${form.signed_at ? `Date signed: ${format(new Date(form.signed_at), 'PPpp')}` : 
     try {
       // Build the consent form URL
       const baseUrl = window.location.origin;
-      const consentUrl = `${baseUrl}/consent?memberId=${sendTarget.memberId}`;
+      const consentUrl = `${baseUrl}/consent/public?memberId=${sendTarget.memberId}`;
 
       if (sendTarget.email) {
         const { error } = await supabase.functions.invoke('send-consent-form', {
