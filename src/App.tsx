@@ -36,6 +36,7 @@ const App = () => (
                 <Route path="/history" element={<History />} />
               <Route path="/consent" element={<ConsentFormsList />} />
               <Route path="/consent/form" element={<ConsentForm />} />
+              <Route path="/consent/public" element={<PublicConsentForm />} />
                 <Route path="/branding" element={<Branding />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
