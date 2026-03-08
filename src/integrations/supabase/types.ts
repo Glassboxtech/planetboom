@@ -291,8 +291,12 @@ export type Database = {
           accent_color: string | null
           app_name: string
           created_at: string
+          favicon_url: string | null
+          font_family: string | null
+          foreground_color: string | null
           id: string
           logo_url: string | null
+          muted_color: string | null
           primary_color: string | null
           updated_at: string
         }
@@ -300,8 +304,12 @@ export type Database = {
           accent_color?: string | null
           app_name?: string
           created_at?: string
+          favicon_url?: string | null
+          font_family?: string | null
+          foreground_color?: string | null
           id?: string
           logo_url?: string | null
+          muted_color?: string | null
           primary_color?: string | null
           updated_at?: string
         }
@@ -309,8 +317,12 @@ export type Database = {
           accent_color?: string | null
           app_name?: string
           created_at?: string
+          favicon_url?: string | null
+          font_family?: string | null
+          foreground_color?: string | null
           id?: string
           logo_url?: string | null
+          muted_color?: string | null
           primary_color?: string | null
           updated_at?: string
         }
