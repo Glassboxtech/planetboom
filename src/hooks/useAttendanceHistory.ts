@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { subWeeks, format, startOfWeek, eachDayOfInterval, isFriday } from 'date-fns';
+import { format, eachDayOfInterval, isFriday, subWeeks } from 'date-fns';
 
 export interface DailyAttendance {
   date: string;
@@ -20,19 +20,21 @@ export interface AttendanceStats {
   trendPercentage: number;
 }
 
-export function useAttendanceHistory(weeks: number = 4) {
+export function useAttendanceHistory(dateRange?: { from: Date; to: Date }) {
   const [history, setHistory] = useState<DailyAttendance[]>([]);
   const [stats, setStats] = useState<AttendanceStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { isAdmin } = useAuth();
 
+  const startDate = dateRange?.from ?? subWeeks(new Date(), 4);
+  const endDate = dateRange?.to ?? new Date();
+
   const fetchHistory = useCallback(async () => {
     if (!isAdmin) return;
 
-    const startDate = subWeeks(new Date(), weeks);
     const startDateStr = format(startDate, 'yyyy-MM-dd');
+    const endDateStr = format(endDate, 'yyyy-MM-dd');
 
-    // Fetch attendance records with member type
     const { data: records, error } = await supabase
       .from('attendance_records')
       .select(`
@@ -41,6 +43,7 @@ export function useAttendanceHistory(weeks: number = 4) {
         members!inner(type)
       `)
       .gte('event_date', startDateStr)
+      .lte('event_date', endDateStr)
       .order('event_date', { ascending: true });
 
     if (error) {
@@ -50,7 +53,7 @@ export function useAttendanceHistory(weeks: number = 4) {
 
     // Group by date
     const byDate = new Map<string, { total: number; regulars: number; visitors: number }>();
-    
+
     records?.forEach((record: any) => {
       const date = record.event_date;
       if (!byDate.has(date)) {
@@ -65,9 +68,8 @@ export function useAttendanceHistory(weeks: number = 4) {
       }
     });
 
-    // Get all Fridays in the range for consistent charting
-    const today = new Date();
-    const fridays = eachDayOfInterval({ start: startDate, end: today })
+    // Get all Fridays in the range
+    const fridays = eachDayOfInterval({ start: startDate, end: endDate })
       .filter(isFriday)
       .map((date) => format(date, 'yyyy-MM-dd'));
 
@@ -88,27 +90,26 @@ export function useAttendanceHistory(weeks: number = 4) {
     if (historyData.length > 0) {
       const eventsWithAttendance = historyData.filter((d) => d.total > 0);
       const totalAttendance = eventsWithAttendance.reduce((sum, d) => sum + d.total, 0);
-      const averageAttendance = eventsWithAttendance.length > 0 
-        ? Math.round(totalAttendance / eventsWithAttendance.length) 
+      const averageAttendance = eventsWithAttendance.length > 0
+        ? Math.round(totalAttendance / eventsWithAttendance.length)
         : 0;
-      
+
       const peak = historyData.reduce((max, d) => (d.total > max.total ? d : max), historyData[0]);
-      
-      // Calculate trend (compare last 2 weeks vs previous 2 weeks)
+
       const midpoint = Math.floor(historyData.length / 2);
       const firstHalf = historyData.slice(0, midpoint);
       const secondHalf = historyData.slice(midpoint);
-      
-      const firstHalfAvg = firstHalf.length > 0 
-        ? firstHalf.reduce((sum, d) => sum + d.total, 0) / firstHalf.length 
+
+      const firstHalfAvg = firstHalf.length > 0
+        ? firstHalf.reduce((sum, d) => sum + d.total, 0) / firstHalf.length
         : 0;
-      const secondHalfAvg = secondHalf.length > 0 
-        ? secondHalf.reduce((sum, d) => sum + d.total, 0) / secondHalf.length 
+      const secondHalfAvg = secondHalf.length > 0
+        ? secondHalf.reduce((sum, d) => sum + d.total, 0) / secondHalf.length
         : 0;
-      
+
       let trend: 'up' | 'down' | 'stable' = 'stable';
       let trendPercentage = 0;
-      
+
       if (firstHalfAvg > 0) {
         trendPercentage = Math.round(((secondHalfAvg - firstHalfAvg) / firstHalfAvg) * 100);
         if (trendPercentage > 5) trend = 'up';
@@ -123,8 +124,10 @@ export function useAttendanceHistory(weeks: number = 4) {
         trend,
         trendPercentage: Math.abs(trendPercentage),
       });
+    } else {
+      setStats(null);
     }
-  }, [isAdmin, weeks]);
+  }, [isAdmin, startDate.getTime(), endDate.getTime()]);
 
   useEffect(() => {
     const load = async () => {
@@ -132,7 +135,7 @@ export function useAttendanceHistory(weeks: number = 4) {
       await fetchHistory();
       setIsLoading(false);
     };
-    
+
     if (isAdmin) {
       load();
     }
