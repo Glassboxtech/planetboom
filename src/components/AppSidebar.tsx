@@ -1,4 +1,4 @@
-import { LayoutDashboard, BarChart3, Settings, FileCheck, LogOut, Palette } from 'lucide-react';
+import { LayoutDashboard, BarChart3, Settings, FileCheck, LogOut, Palette, CalendarDays } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 
 const mainNav = [
   { title: 'Dashboard', url: '/', icon: LayoutDashboard },
+  { title: 'Events', url: '/events', icon: CalendarDays },
   { title: 'History', url: '/history', icon: BarChart3 },
   { title: 'Consent Forms', url: '/consent', icon: FileCheck },
 ];

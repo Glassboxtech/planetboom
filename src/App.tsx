@@ -16,6 +16,9 @@ import ConsentFormsList from "./pages/ConsentFormsList";
 import PublicConsentForm from "./pages/PublicConsentForm";
 import Branding from "./pages/Branding";
 import OAuthConsent from "./pages/OAuthConsent";
+import Events from "./pages/Events";
+import EventDetail from "./pages/EventDetail";
+import PublicEventRegister from "./pages/PublicEventRegister";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +42,9 @@ const App = () => (
               <Route path="/consent/form" element={<ConsentForm />} />
               <Route path="/consent/public" element={<PublicConsentForm />} />
                 <Route path="/branding" element={<Branding />} />
+                <Route path="/events" element={<Events />} />
+                <Route path="/events/:id" element={<EventDetail />} />
+                <Route path="/register/:slug" element={<PublicEventRegister />} />
                 <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
