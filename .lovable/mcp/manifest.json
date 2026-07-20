@@ -1,0 +1,151 @@
+{
+  "version": 1,
+  "sdk_version": "0.23.0",
+  "path": "/functions/v1/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://pvdcfvwvmeypelenfzvc.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "youth-checkin-mcp",
+      "version": "0.1.0",
+      "title": "Youth Check-In MCP"
+    },
+    "tools": [
+      {
+        "name": "list_members",
+        "title": "List members",
+        "description": "List members visible to the signed-in user. Supports optional search and status filters.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "search": {
+              "type": "string",
+              "description": "Case-insensitive substring match on first or last name."
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "active",
+                "inactive"
+              ],
+              "description": "Filter by member status."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "description": "Max number of members to return (default 50)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_member",
+        "title": "Get member",
+        "description": "Fetch full details for a single member by ID.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "member_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The member's UUID."
+            }
+          },
+          "required": [
+            "member_id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_attendance",
+        "title": "List attendance records",
+        "description": "List attendance records within an optional date range. Dates are ISO YYYY-MM-DD.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "from": {
+              "type": "string",
+              "description": "Start date (inclusive), ISO YYYY-MM-DD."
+            },
+            "to": {
+              "type": "string",
+              "description": "End date (inclusive), ISO YYYY-MM-DD."
+            },
+            "member_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Filter to a single member."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500,
+              "description": "Max records (default 100)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "check_in_member",
+        "title": "Check in member",
+        "description": "Record an attendance for a member on a given event date (defaults to today).",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "member_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The member to check in."
+            },
+            "event_date": {
+              "type": "string",
+              "description": "Event date ISO YYYY-MM-DD (defaults to today)."
+            }
+          },
+          "required": [
+            "member_id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
