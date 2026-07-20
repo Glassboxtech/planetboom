@@ -36,7 +36,7 @@ export default function EventDetail() {
   };
 
   return (
-    <AppLayout requireAdmin>
+    <AppLayout>
       <div className="p-6 max-w-5xl mx-auto space-y-6">
         <Button asChild variant="ghost" size="sm" className="-ml-2">
           <Link to="/events">
