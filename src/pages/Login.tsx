@@ -16,12 +16,14 @@ export default function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const inviteToken = searchParams.get('invite');
+  const nextParam = searchParams.get('next');
+  const safeNext = nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//') ? nextParam : '/';
 
   useEffect(() => {
     if (!isLoading && user) {
-      navigate('/');
+      navigate(safeNext, { replace: true });
     }
-  }, [user, isLoading, navigate]);
+  }, [user, isLoading, navigate, safeNext]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +35,7 @@ export default function Login() {
       toast.error(error.message);
     } else {
       toast.success('Signed in successfully!');
-      navigate('/');
+      navigate(safeNext, { replace: true });
     }
     setIsSubmitting(false);
   };
@@ -85,7 +87,11 @@ export default function Login() {
           <div className="mt-4 text-center text-sm text-muted-foreground">
             <span>Don't have an account? </span>
             <Link
-              to={inviteToken ? `/signup?invite=${inviteToken}` : '/signup'}
+              to={
+                inviteToken
+                  ? `/signup?invite=${inviteToken}${nextParam ? `&next=${encodeURIComponent(nextParam)}` : ''}`
+                  : `/signup${nextParam ? `?next=${encodeURIComponent(nextParam)}` : ''}`
+              }
               className="text-primary hover:underline"
             >
               Sign up
