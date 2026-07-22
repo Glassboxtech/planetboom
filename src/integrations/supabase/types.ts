@@ -127,6 +127,7 @@ export type Database = {
         Row: {
           checked_in_at: string | null
           created_at: string
+          custom_data: Json
           email: string | null
           event_id: string
           first_name: string
@@ -137,6 +138,7 @@ export type Database = {
         Insert: {
           checked_in_at?: string | null
           created_at?: string
+          custom_data?: Json
           email?: string | null
           event_id: string
           first_name: string
@@ -147,6 +149,7 @@ export type Database = {
         Update: {
           checked_in_at?: string | null
           created_at?: string
+          custom_data?: Json
           email?: string | null
           event_id?: string
           first_name?: string
@@ -166,8 +169,10 @@ export type Database = {
       }
       events: {
         Row: {
+          banner_url: string | null
           created_at: string
           created_by: string | null
+          custom_fields: Json
           description: string | null
           event_date: string
           id: string
@@ -178,8 +183,10 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          banner_url?: string | null
           created_at?: string
           created_by?: string | null
+          custom_fields?: Json
           description?: string | null
           event_date: string
           id?: string
@@ -190,8 +197,10 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          banner_url?: string | null
           created_at?: string
           created_by?: string | null
+          custom_fields?: Json
           description?: string | null
           event_date?: string
           id?: string

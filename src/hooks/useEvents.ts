@@ -2,6 +2,23 @@ import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+export type CustomFieldType =
+  | 'text'
+  | 'textarea'
+  | 'email'
+  | 'phone'
+  | 'number'
+  | 'date'
+  | 'select';
+
+export interface CustomField {
+  id: string;
+  label: string;
+  type: CustomFieldType;
+  required: boolean;
+  options?: string[]; // for select
+}
+
 export interface EventItem {
   id: string;
   name: string;
@@ -12,6 +29,8 @@ export interface EventItem {
   is_active: boolean;
   created_by: string | null;
   created_at: string;
+  banner_url: string | null;
+  custom_fields: CustomField[];
 }
 
 export interface EventRegistration {
@@ -23,6 +42,7 @@ export interface EventRegistration {
   phone: string | null;
   checked_in_at: string | null;
   created_at: string;
+  custom_data: Record<string, string | number | null>;
 }
 
 function makeSlug(name: string) {
@@ -33,6 +53,14 @@ function makeSlug(name: string) {
     .slice(0, 40) || 'event';
   const suffix = Math.random().toString(36).slice(2, 7);
   return `${base}-${suffix}`;
+}
+
+function normalizeEvent(row: any): EventItem {
+  return {
+    ...row,
+    banner_url: row.banner_url ?? null,
+    custom_fields: Array.isArray(row.custom_fields) ? row.custom_fields : [],
+  } as EventItem;
 }
 
 export function useEvents() {
@@ -48,7 +76,7 @@ export function useEvents() {
       toast.error('Failed to load events');
       return;
     }
-    setEvents(data as EventItem[]);
+    setEvents((data ?? []).map(normalizeEvent));
   }, []);
 
   useEffect(() => {
@@ -65,6 +93,8 @@ export function useEvents() {
       description?: string;
       event_date: string;
       location?: string;
+      banner_url?: string | null;
+      custom_fields?: CustomField[];
     }) => {
       const { data: userRes } = await supabase.auth.getUser();
       if (!userRes.user) {
@@ -78,6 +108,8 @@ export function useEvents() {
           description: input.description || null,
           event_date: input.event_date,
           location: input.location || null,
+          banner_url: input.banner_url || null,
+          custom_fields: (input.custom_fields ?? []) as any,
           slug: makeSlug(input.name),
           created_by: userRes.user.id,
         })
@@ -87,9 +119,10 @@ export function useEvents() {
         toast.error(error.message || 'Failed to create event');
         return null;
       }
-      setEvents((prev) => [data as EventItem, ...prev]);
+      const ev = normalizeEvent(data);
+      setEvents((prev) => [ev, ...prev]);
       toast.success('Event created');
-      return data as EventItem;
+      return ev;
     },
     []
   );
@@ -133,8 +166,13 @@ export function useEventRegistrations(eventId: string | undefined) {
         .order('created_at', { ascending: true }),
     ]);
     if (error) toast.error('Failed to load registrations');
-    setEvent((ev as EventItem) ?? null);
-    setRegistrations((regs as EventRegistration[]) ?? []);
+    setEvent(ev ? normalizeEvent(ev) : null);
+    setRegistrations(
+      ((regs as any[]) ?? []).map((r) => ({
+        ...r,
+        custom_data: r.custom_data ?? {},
+      })) as EventRegistration[]
+    );
     setIsLoading(false);
   }, [eventId]);
 
