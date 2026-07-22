@@ -61,7 +61,7 @@ export default function PublicEventRegister() {
         .eq('slug', slug)
         .maybeSingle();
       if (error) console.error(error);
-      setEvent((data as EventRow) ?? null);
+      setEvent((data as unknown as EventRow) ?? null);
       setLoading(false);
     })();
   }, [slug]);
