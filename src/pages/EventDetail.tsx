@@ -127,7 +127,7 @@ export default function EventDetail() {
                             </Badge>
                           )}
                         </div>
-                        <div className="text-xs text-muted-foreground flex gap-3 mt-1">
+                        <div className="text-xs text-muted-foreground flex flex-wrap gap-x-3 gap-y-1 mt-1">
                           {r.email && (
                             <span className="flex items-center gap-1">
                               <Mail className="h-3 w-3" /> {r.email}
@@ -139,6 +139,18 @@ export default function EventDetail() {
                             </span>
                           )}
                         </div>
+                        {r.custom_data && Object.keys(r.custom_data).length > 0 && (
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            {Object.entries(r.custom_data).map(([k, v]) => (
+                              <span
+                                key={k}
+                                className="text-xs bg-muted px-2 py-0.5 rounded-md"
+                              >
+                                <span className="text-muted-foreground">{k}:</span> {String(v)}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                       <div
                         className={`h-8 w-8 rounded-full flex items-center justify-center ${
