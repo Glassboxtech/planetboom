@@ -19,6 +19,20 @@ function escapeHtml(text: string): string {
   return text.replace(/[&<>"']/g, (m) => map[m]);
 }
 
+// Simple in-memory rate limiter: 10 emails per hour per super-admin
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+function checkRateLimit(key: string, max = 10, windowMs = 60 * 60 * 1000): boolean {
+  const now = Date.now();
+  const rec = rateLimitMap.get(key);
+  if (!rec || now > rec.resetAt) {
+    rateLimitMap.set(key, { count: 1, resetAt: now + windowMs });
+    return true;
+  }
+  if (rec.count >= max) return false;
+  rec.count++;
+  return true;
+}
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });

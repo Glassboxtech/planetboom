@@ -59,6 +59,14 @@ Deno.serve(async (req) => {
     const userId = claimsData.claims.sub
     const userEmail = claimsData.claims.email
 
+    if (!checkRateLimit(`accept:${userId}`)) {
+      return new Response(
+        JSON.stringify({ error: 'Too many attempts. Please try again later.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+
     const body = await req.json()
     const { inviteToken } = body
 
