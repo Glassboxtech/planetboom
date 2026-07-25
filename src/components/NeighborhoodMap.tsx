@@ -138,24 +138,29 @@ export function NeighborhoodMap({ neighborhoods }: NeighborhoodMapProps) {
       });
       circlesRef.current.push(circle);
 
-      // Create custom marker element
+      // Create custom marker element using safe DOM APIs (textContent, no innerHTML)
       const markerContent = document.createElement('div');
       markerContent.className = 'neighborhood-marker';
-      markerContent.innerHTML = `
-        <div style="
-          background: white;
-          border: 2px solid hsl(${hue}, 70%, 50%);
-          border-radius: 8px;
-          padding: 8px 12px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-          text-align: center;
-          min-width: 80px;
-        ">
-          <div style="font-weight: 600; font-size: 14px; color: #1f2937;">${neighborhood.name}</div>
-          <div style="font-size: 20px; font-weight: 700; color: hsl(${hue}, 70%, 45%);">${neighborhood.memberCount}</div>
-          <div style="font-size: 11px; color: #6b7280;">members</div>
-        </div>
-      `;
+
+      const card = document.createElement('div');
+      card.style.cssText = `background:white;border:2px solid hsl(${hue},70%,50%);border-radius:8px;padding:8px 12px;box-shadow:0 2px 8px rgba(0,0,0,0.2);text-align:center;min-width:80px;`;
+
+      const nameDiv = document.createElement('div');
+      nameDiv.style.cssText = 'font-weight:600;font-size:14px;color:#1f2937;';
+      nameDiv.textContent = neighborhood.name;
+
+      const countDiv = document.createElement('div');
+      countDiv.style.cssText = `font-size:20px;font-weight:700;color:hsl(${hue},70%,45%);`;
+      countDiv.textContent = String(neighborhood.memberCount);
+
+      const labelDiv = document.createElement('div');
+      labelDiv.style.cssText = 'font-size:11px;color:#6b7280;';
+      labelDiv.textContent = 'members';
+
+      card.appendChild(nameDiv);
+      card.appendChild(countDiv);
+      card.appendChild(labelDiv);
+      markerContent.appendChild(card);
 
       const marker = new window.google.maps.marker.AdvancedMarkerElement({
         map,

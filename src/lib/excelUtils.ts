@@ -78,7 +78,8 @@ export async function exportToExcel() {
     XLSX.writeFile(wb, `youth-checkin-${today}.xlsx`);
     toast.success('Excel file downloaded!');
   } catch (error) {
-    console.error('Export error:', error);
+    if (import.meta.env.DEV) console.error('Export error:', error);
+    else console.error('Export failed');
     toast.error('Failed to export data');
   }
 }
@@ -193,7 +194,8 @@ export async function importFromExcel(
           });
 
           if (error) {
-            console.error('Insert error for', fullName, error);
+            if (import.meta.env.DEV) console.error('Insert error for', fullName, error);
+            else console.error('Row insert failed');
             skipped++;
           } else {
             added++;
@@ -206,7 +208,8 @@ export async function importFromExcel(
         toast.success(`${added} member(s) imported successfully!`);
         resolve(added);
       } catch (err) {
-        console.error('Import error:', err);
+        if (import.meta.env.DEV) console.error('Import error:', err);
+        else console.error('Import failed');
         toast.error('Failed to parse Excel file');
         reject(err);
       }

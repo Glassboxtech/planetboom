@@ -47,7 +47,8 @@ export function useAttendanceHistory(dateRange?: { from: Date; to: Date }) {
       .order('event_date', { ascending: true });
 
     if (error) {
-      console.error('Error fetching attendance history:', error);
+      if (import.meta.env.DEV) console.error('Error fetching attendance history:', error);
+      else console.error('Failed to fetch attendance history');
       return;
     }
 
