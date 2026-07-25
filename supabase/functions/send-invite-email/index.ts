@@ -82,6 +82,14 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    if (!checkRateLimit(`send-invite:${userId}`)) {
+      return new Response(
+        JSON.stringify({ error: 'Rate limit exceeded. Maximum 10 invitations per hour.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+
     // --- Input validation ---
     const body = await req.json();
     const email = typeof body.email === 'string' ? body.email.trim() : '';
