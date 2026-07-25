@@ -59,7 +59,8 @@ export default function Signup() {
         toast.error(result.error || 'Failed to accept invitation');
       }
     } catch (error) {
-      console.error('Error accepting invitation:', error);
+      if (import.meta.env.DEV) console.error('Error accepting invitation:', error);
+      else console.error('Invitation processing failed');
       toast.error('Failed to process invitation');
     }
     navigate('/');

@@ -10,6 +10,20 @@ function isValidToken(token: unknown): token is string {
   return typeof token === 'string' && /^[a-f0-9]{64}$/.test(token);
 }
 
+// Simple in-memory rate limiter: 5 attempts per 15 minutes per user
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+function checkRateLimit(key: string, max = 5, windowMs = 15 * 60 * 1000): boolean {
+  const now = Date.now();
+  const rec = rateLimitMap.get(key);
+  if (!rec || now > rec.resetAt) {
+    rateLimitMap.set(key, { count: 1, resetAt: now + windowMs });
+    return true;
+  }
+  if (rec.count >= max) return false;
+  rec.count++;
+  return true;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -44,6 +58,14 @@ Deno.serve(async (req) => {
 
     const userId = claimsData.claims.sub
     const userEmail = claimsData.claims.email
+
+    if (!checkRateLimit(`accept:${userId}`)) {
+      return new Response(
+        JSON.stringify({ error: 'Too many attempts. Please try again later.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
 
     const body = await req.json()
     const { inviteToken } = body

@@ -54,7 +54,8 @@ export function useMembers(eventDate?: string) {
     const { data, error } = await query;
 
     if (error) {
-      console.error('Error fetching members:', error);
+      if (import.meta.env.DEV) console.error('Error fetching members:', error);
+      else console.error('Failed to load members');
       toast.error('Failed to load members');
       return;
     }
@@ -74,7 +75,8 @@ export function useMembers(eventDate?: string) {
       .order('name');
 
     if (error) {
-      console.error('Error fetching neighborhoods:', error);
+      if (import.meta.env.DEV) console.error('Error fetching neighborhoods:', error);
+      else console.error('Failed to fetch suburbs');
       return;
     }
 
@@ -90,7 +92,8 @@ export function useMembers(eventDate?: string) {
       .eq('event_date', activeDate);
 
     if (error) {
-      console.error('Error fetching attendance:', error);
+      if (import.meta.env.DEV) console.error('Error fetching attendance:', error);
+      else console.error('Failed to fetch attendance');
       return;
     }
 

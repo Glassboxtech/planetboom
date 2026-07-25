@@ -29,7 +29,8 @@ export function useInvitations() {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching invitations:', error);
+      if (import.meta.env.DEV) console.error('Error fetching invitations:', error);
+      else console.error('Failed to fetch invitations');
     } else {
       setInvitations(data as Invitation[]);
     }
@@ -78,16 +79,16 @@ export function useInvitations() {
       });
       
       if (response.error) {
-        console.error('Email send error:', response.error);
-        // Still copy to clipboard as fallback
+        if (import.meta.env.DEV) console.error('Email send error:', response.error);
+        else console.error('Email send failed');
         await navigator.clipboard.writeText(inviteUrl);
         toast.warning('Email failed to send. Invitation link copied to clipboard instead.');
       } else {
         toast.success('Invitation email sent successfully!');
       }
     } catch (err) {
-      console.error('Error calling send-invite-email:', err);
-      // Fallback to clipboard
+      if (import.meta.env.DEV) console.error('Error calling send-invite-email:', err);
+      else console.error('Email service unavailable');
       await navigator.clipboard.writeText(inviteUrl);
       toast.warning('Email failed. Link copied to clipboard.');
     }

@@ -34,7 +34,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .maybeSingle();
 
     if (error) {
-      console.error('Error fetching user role:', error);
+      if (import.meta.env.DEV) console.error('Error fetching user role:', error);
+      else console.error('Failed to fetch user role');
       return { role: null as UserRole, neighborhoodId: null as string | null };
     }
 

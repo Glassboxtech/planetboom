@@ -76,7 +76,8 @@ export function useConsentForm(memberId: string | null) {
       .maybeSingle();
 
     if (error) {
-      console.error('Error fetching consent form:', error);
+      if (import.meta.env.DEV) console.error('Error fetching consent form:', error);
+      else console.error('Failed to fetch consent form');
       toast.error('Failed to load consent form');
     } else {
       setConsentForm(data);
@@ -148,7 +149,8 @@ export function useConsentForm(memberId: string | null) {
       toast.success('Consent form saved successfully');
       return true;
     } catch (error) {
-      console.error('Error saving consent form:', error);
+      if (import.meta.env.DEV) console.error('Error saving consent form:', error);
+      else console.error('Failed to save consent form');
       toast.error('Failed to save consent form');
       return false;
     } finally {
